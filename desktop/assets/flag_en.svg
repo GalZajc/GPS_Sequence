@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="100%" height="100%">
+  <clipPath id="flagBounds">
+    <rect width="600" height="400"/>
+  </clipPath>
+  <g clip-path="url(#flagBounds)">
+    <!-- Modra podlaga -->
+    <rect width="600" height="400" fill="#012169"/>
+    
+    <!-- Beli diagonali (Sv. Andrej / podlaga Sv. Patrika) -->
+    <path d="M 0,0 L 600,400 M 600,0 L 0,400" stroke="#FFFFFF" stroke-width="80"/>
+    
+    <!-- Rdeči diagonali (Sv. Patrik, zamaknjeni / counterchanged) -->
+    <path d="M 0,400 L 300,200" stroke="#C8102E" stroke-width="26.67"/>
+    <path d="M 600,0 L 300,200" stroke="#C8102E" stroke-width="26.67"/>
+    <path d="M 0,0 L 300,200" stroke="#C8102E" stroke-width="26.67" transform="rotate(180 300 200) translate(0 0)"/>
+    <path d="M 600,400 L 300,200" stroke="#C8102E" stroke-width="26.67" transform="rotate(180 300 200) translate(0 0)"/>
+
+    <!-- Beli križ (Podlaga Sv. Jurija) -->
+    <path d="M 300,0 V 400 M 0,200 H 600" stroke="#FFFFFF" stroke-width="133.33"/>
+
+    <!-- Rdeči križ (Sv. Jurij) -->
+    <path d="M 300,0 V 400 M 0,200 H 600" stroke="#C8102E" stroke-width="80"/>
+  </g>
+</svg>

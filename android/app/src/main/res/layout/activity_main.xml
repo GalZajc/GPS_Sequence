@@ -12,21 +12,70 @@
         android:orientation="vertical"
         android:padding="20dp">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <!-- Glava z naslovom in zastavicami za preklop jezika -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="GPS Sequence"
-            android:textColor="@color/white"
-            android:textSize="24sp"
-            android:textStyle="bold" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:text="Robusten zanesljiv GPS zajem v ozadju"
-            android:textColor="@color/text_secondary"
-            android:textSize="13sp" />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvAppTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/app_name"
+                    android:textColor="@color/white"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvAppSubtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/app_subtitle"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <!-- Skupina za preklop jezika (SL / EN) z zastavicami -->
+            <LinearLayout
+                android:id="@+id/layoutLangToggle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:background="@drawable/bg_lang_group"
+                android:padding="3dp"
+                android:gravity="center_vertical">
+
+                <ImageButton
+                    android:id="@+id/btnLangSl"
+                    android:layout_width="38dp"
+                    android:layout_height="26dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/bg_flag_selected"
+                    android:src="@drawable/ic_flag_sl"
+                    android:scaleType="fitCenter"
+                    android:padding="2dp"
+                    android:contentDescription="Slovenščina" />
+
+                <ImageButton
+                    android:id="@+id/btnLangEn"
+                    android:layout_width="38dp"
+                    android:layout_height="26dp"
+                    android:background="@drawable/bg_flag_normal"
+                    android:src="@drawable/ic_flag_en"
+                    android:scaleType="fitCenter"
+                    android:padding="2dp"
+                    android:contentDescription="English" />
+            </LinearLayout>
+        </LinearLayout>
 
         <!-- Nastavitve -->
         <com.google.android.material.card.MaterialCardView
@@ -46,10 +95,11 @@
                 android:padding="16dp">
 
                 <TextView
+                    android:id="@+id/tvSecIntervals"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="12dp"
-                    android:text="NASTAVITVE INTERVALOV"
+                    android:text="@string/sec_intervals"
                     android:textColor="@color/blue_accent"
                     android:textSize="12sp"
                     android:textStyle="bold" />
@@ -67,9 +117,10 @@
                         android:orientation="vertical">
 
                         <TextView
+                            android:id="@+id/tvLblT1"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="t1: Meritev (s)"
+                            android:text="@string/lbl_interval_t1"
                             android:textColor="@color/white"
                             android:textSize="13sp" />
 
@@ -93,9 +144,10 @@
                         android:orientation="vertical">
 
                         <TextView
+                            android:id="@+id/tvLblT2"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="t2: Prenos (s)"
+                            android:text="@string/lbl_interval_t2"
                             android:textColor="@color/white"
                             android:textSize="13sp" />
 
@@ -113,10 +165,11 @@
                 </LinearLayout>
 
                 <TextView
+                    android:id="@+id/tvLblWebhook"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:text="Google Drive Webhook URL"
+                    android:text="@string/lbl_webhook_url"
                     android:textColor="@color/white"
                     android:textSize="13sp" />
 
@@ -141,7 +194,7 @@
             android:layout_height="56dp"
             android:layout_marginBottom="16dp"
             android:backgroundTint="@color/green_start"
-            android:text="ZAŽENI SLEDENJE"
+            android:text="@string/btn_start_tracking"
             android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold"
@@ -165,10 +218,11 @@
                 android:padding="16dp">
 
                 <TextView
+                    android:id="@+id/tvSecStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
-                    android:text="STANJE SISTEMA"
+                    android:text="@string/sec_system_status"
                     android:textColor="@color/blue_accent"
                     android:textSize="12sp"
                     android:textStyle="bold" />
@@ -177,7 +231,7 @@
                     android:id="@+id/tvServiceStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Status: USTAVLJENO"
+                    android:text="@string/status_stopped"
                     android:textColor="@color/white"
                     android:textSize="14sp"
                     android:textStyle="bold" />
@@ -193,7 +247,7 @@
                     android:id="@+id/tvLastLocation"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Zadnja lokacija: --"
+                    android:text="@string/last_location_none"
                     android:textColor="@color/white"
                     android:textSize="13sp" />
 
@@ -201,7 +255,7 @@
                     android:id="@+id/tvLocationDetails"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Natančnost: -- | Hitrost: --"
+                    android:text="@string/location_details_none"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp" />
 
@@ -216,7 +270,7 @@
                     android:id="@+id/tvTotalPoints"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Vseh shranjenih točk v bazi: 0"
+                    android:text="0"
                     android:textColor="@color/white"
                     android:textSize="13sp" />
 
@@ -224,7 +278,7 @@
                     android:id="@+id/tvUnsyncedPoints"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Čaka na prenos (offline zaloga): 0"
+                    android:text="0"
                     android:textColor="@color/white"
                     android:textSize="13sp" />
 
@@ -233,7 +287,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Zadnji prenos: Še ni bilo prenosa"
+                    android:text="@string/last_sync_none"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp" />
 
@@ -253,7 +307,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="4dp"
                 android:layout_weight="1"
-                android:text="Test prenos"
+                android:text="@string/btn_test_upload"
                 android:textColor="@color/white"
                 android:textSize="12sp"
                 app:strokeColor="#555555" />
@@ -265,7 +319,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
                 android:layout_weight="1"
-                android:text="Baterija brez mej"
+                android:text="@string/btn_battery_unrestricted"
                 android:textColor="@color/white"
                 android:textSize="12sp"
                 app:strokeColor="#555555" />
@@ -277,7 +331,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="Počisti že prenesene točke iz baze"
+            android:text="@string/btn_clear_synced"
             android:textColor="@color/text_secondary"
             android:textSize="11sp" />
 

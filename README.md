@@ -9,10 +9,11 @@
 
 ## 🌍 Language Support / Podpora za jezike
 
-The web viewer provides full **bilingual support**:
-- 🇸🇮 **Slovenščina**: Privzeto pri zagonu na `localhost` (markerji `OD` in `DO`, slovenske nastavitve in obvestila).
-- 🇬🇧 **English**: Default on external/hosted deployments or selectable via the flag switch (markers `FR` and `TO`, English settings and notifications).
-- Language preference is stored in `localStorage` and can be toggled anytime from the settings drawer.
+The entire suite (both the **Desktop Satellite Viewer** and the **Android Tracker mobile app**) provides full **bilingual support** with crisp vector flag icons:
+- 🇸🇮 **Slovenščina**: Privzeto pri zagonu na `localhost` in v mobilni aplikaciji (markerji `OD` in `DO`, vmesnik in obvestila v slovenščini).
+- 🇬🇧 **English**: Default on external/hosted deployments or selectable via the flag switch (markers `FR` and `TO`, English interface and notifications).
+- High-resolution SVG / vector flag graphics for Slovenia and the United Kingdom ensure sharp rendering across all displays.
+- Language preference is persisted on both platforms (`localStorage` on desktop, `SharedPreferences` on Android).
 
 ---
 

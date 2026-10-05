@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="100%" height="100%">
+  <defs>
+    <clipPath id="shieldClip">
+      <path d="M 125,50 L 175,50 C 190,50 200,60 200,90 C 200,160 150,200 150,200 C 150,200 100,160 100,90 C 100,60 110,50 125,50 Z"/>
+    </clipPath>
+  </defs>
+
+  <!-- Bel pas (zgoraj) -->
+  <rect width="600" height="133.33" fill="#FFFFFF"/>
+  <!-- Moder pas (na sredini) -->
+  <rect y="133.33" width="600" height="133.33" fill="#0038A8"/>
+  <!-- Rdeč pas (spodaj) -->
+  <rect y="266.67" width="600" height="133.33" fill="#ED1C24"/>
+
+  <!-- Grb Slovenije -->
+  <!-- Rdeča obroba ščita -->
+  <path d="M 122,46 L 178,46 C 195,46 206,58 206,90 C 206,165 150,208 150,208 C 150,208 94,165 94,90 C 94,58 105,46 122,46 Z" fill="#ED1C24"/>
+  <!-- Modro polje ščita -->
+  <path d="M 125,50 L 175,50 C 190,50 200,60 200,90 C 200,160 150,200 150,200 C 150,200 100,160 100,90 C 100,60 110,50 125,50 Z" fill="#0038A8"/>
+
+  <!-- Triglav (bela gora s tremi vrhovi) -->
+  <g clip-path="url(#shieldClip)">
+    <path d="M 100,200 L 100,160 L 126,142 L 150,105 L 174,142 L 200,160 L 200,200 Z" fill="#FFFFFF"/>
+    <!-- Modra valova pod Triglavom -->
+    <path d="M 100,158 Q 112.5,152 125,158 T 150,158 T 175,158 T 200,158 L 200,168 Q 187.5,162 175,168 T 150,168 T 125,168 T 100,168 Z" fill="#0038A8"/>
+    <path d="M 100,176 Q 112.5,170 125,176 T 150,176 T 175,176 T 200,176 L 200,186 Q 187.5,180 175,186 T 150,186 T 125,186 T 100,186 Z" fill="#0038A8"/>
+  </g>
+
+  <!-- Tri zlate šestkrake zvezde Celjskih grofov -->
+  <!-- Zvezda 1 (zgoraj levo) -->
+  <polygon points="135,62 136.5,67 141,65 138,69 141.5,73 136.5,72 135,77 133.5,72 128.5,73 132,69 129,65 133.5,67" fill="#FFCC00"/>
+  <!-- Zvezda 2 (zgoraj desno) -->
+  <polygon points="165,62 166.5,67 171,65 168,69 171.5,73 166.5,72 165,77 163.5,72 158.5,73 162,69 159,65 163.5,67" fill="#FFCC00"/>
+  <!-- Zvezda 3 (spodaj na sredini med njima) -->
+  <polygon points="150,78 151.5,83 156,81 153,85 156.5,89 151.5,88 150,93 148.5,88 143.5,89 147,85 144,81 148.5,83" fill="#FFCC00"/>
+</svg>

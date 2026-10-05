@@ -1,0 +1,49 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="36dp"
+    android:height="24dp"
+    android:viewportWidth="600"
+    android:viewportHeight="400">
+
+    <!-- Modra podlaga -->
+    <path
+        android:fillColor="#012169"
+        android:pathData="M0,0 h600 v400 h-600 z" />
+
+    <!-- Bela diagonala 1 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M0,0 L60,0 L600,360 L600,400 L540,400 L0,40 z" />
+
+    <!-- Bela diagonala 2 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M600,0 L540,0 L0,360 L0,400 L60,400 L600,40 z" />
+
+    <!-- Rdeča diagonala (Sv. Patrik) -->
+    <!-- Zgoraj levo -->
+    <path
+        android:fillColor="#C8102E"
+        android:pathData="M0,0 L30,0 L270,160 L240,160 z" />
+    <!-- Spodaj desno -->
+    <path
+        android:fillColor="#C8102E"
+        android:pathData="M600,400 L570,400 L330,240 L360,240 z" />
+    <!-- Zgoraj desno -->
+    <path
+        android:fillColor="#C8102E"
+        android:pathData="M600,0 L600,20 L360,180 L360,160 z" />
+    <!-- Spodaj levo -->
+    <path
+        android:fillColor="#C8102E"
+        android:pathData="M0,400 L0,380 L240,220 L240,240 z" />
+
+    <!-- Beli križ (Podlaga Sv. Jurija) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M0,135 h600 v130 h-600 z M235,0 h130 v400 h-130 z" />
+
+    <!-- Rdeči križ (Sv. Jurij) -->
+    <path
+        android:fillColor="#C8102E"
+        android:pathData="M0,160 h600 v80 h-600 z M260,0 h80 v400 h-80 z" />
+</vector>

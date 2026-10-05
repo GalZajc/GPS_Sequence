@@ -1,5 +1,44 @@
 <resources>
     <string name="app_name">GPS Sequence</string>
+    <string name="app_subtitle">Robusten zanesljiv GPS zajem v ozadju</string>
     <string name="channel_name">GPS Sledenje v ozadju</string>
     <string name="channel_desc">Prikazuje aktivno beleženje koordinat v ozadju</string>
+    
+    <!-- Nastavitve -->
+    <string name="sec_intervals">NASTAVITVE INTERVALOV</string>
+    <string name="lbl_interval_t1">t1: Meritev (s)</string>
+    <string name="lbl_interval_t2">t2: Prenos (s)</string>
+    <string name="lbl_webhook_url">Google Drive Webhook URL</string>
+    
+    <!-- Glavni gumb -->
+    <string name="btn_start_tracking">ZAŽENI SLEDENJE</string>
+    <string name="btn_stop_tracking">USTAVI SLEDENJE</string>
+    
+    <!-- Stanje sistema -->
+    <string name="sec_system_status">STANJE SISTEMA</string>
+    <string name="status_stopped">Status: USTAVLJENO</string>
+    <string name="status_active">Status: AKTIVNO - SNEMANJE</string>
+    <string name="last_location_format">Zadnja lokacija: %.6f, %.6f</string>
+    <string name="last_location_none">Zadnja lokacija: --</string>
+    <string name="location_details_format">Natančnost: ±%.1f m | Hitrost: %.1f km/h | Višina: %.1f m</string>
+    <string name="location_details_none">Natančnost: -- | Hitrost: --</string>
+    <string name="total_points_format">Vseh shranjenih točk v bazi: %1$d</string>
+    <string name="unsynced_points_format">Čaka na prenos (offline zaloga): %1$d</string>
+    <string name="last_sync_format">Zadnji prenos: %1$s</string>
+    <string name="last_sync_none">Še ni bilo prenosa</string>
+    
+    <!-- Gumbi na dnu -->
+    <string name="btn_test_upload">Test prenos</string>
+    <string name="btn_battery_unrestricted">Baterija brez mej</string>
+    <string name="btn_clear_synced">Počisti že prenesene točke iz baze</string>
+    
+    <!-- Obvestila in Toast -->
+    <string name="toast_permission_required">Natančna lokacija je obvezna za delovanje!</string>
+    <string name="toast_enter_webhook">Vnesite veljaven Webhook URL!</string>
+    <string name="toast_cleared_points">Pobrisano %1$d že poslanih točk.</string>
+    <string name="toast_battery_unrestricted">Aplikacija že ima neomejeno delovanje v ozadju!</string>
+    
+    <!-- Notifikacija servisa -->
+    <string name="notification_title_format">GPS Sledenje aktivno (t1=%1$ds, t2=%2$ds)</string>
+    <string name="notification_action_stop">Ustavi</string>
 </resources>

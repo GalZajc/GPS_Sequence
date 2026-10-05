@@ -122,7 +122,7 @@ body, html {
 
 .lang-switch-group {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   align-items: center;
   background: rgba(255, 255, 255, 0.06);
   padding: 3px 6px;
@@ -134,23 +134,33 @@ body, html {
 .btn-lang {
   background: transparent;
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 16px;
-  line-height: 1;
-  padding: 3px 5px;
+  padding: 2px 3px;
   opacity: 0.55;
   transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-lang .flag-icon {
+  width: 24px;
+  height: 16px;
+  border-radius: 2px;
+  object-fit: cover;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  display: block;
 }
 .btn-lang:hover {
   opacity: 1;
-  transform: scale(1.15);
+  transform: scale(1.1);
 }
 .btn-lang.active {
   opacity: 1;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(0, 176, 255, 0.15);
   border-color: var(--accent-blue);
-  box-shadow: 0 0 8px rgba(0, 176, 255, 0.4);
+  box-shadow: 0 0 8px rgba(0, 176, 255, 0.45);
 }
 
 .btn-close-drawer {

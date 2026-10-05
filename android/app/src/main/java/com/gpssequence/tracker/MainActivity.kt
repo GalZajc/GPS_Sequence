@@ -14,7 +14,9 @@ import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
+import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -36,6 +38,7 @@ class MainActivity : AppCompatActivity() {
         private const val KEY_T1 = "pref_t1"
         private const val KEY_T2 = "pref_t2"
         private const val KEY_WEBHOOK = "pref_webhook"
+        private const val KEY_LANG = "pref_lang"
     }
 
     private val permissionLauncher = registerForActivityResult(
@@ -45,7 +48,7 @@ class MainActivity : AppCompatActivity() {
         if (fineLocationGranted) {
             checkBackgroundLocationPermission()
         } else {
-            Toast.makeText(this, "Natančna lokacija je obvezna za delovanje!", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, getString(R.string.toast_permission_required), Toast.LENGTH_LONG).show()
         }
     }
 
@@ -64,6 +67,9 @@ class MainActivity : AppCompatActivity() {
         dbHelper = GpsDatabaseHelper.getInstance(this)
         syncManager = GpsSyncManager(this)
 
+        val currentLang = prefs.getString(KEY_LANG, "sl") ?: "sl"
+        updateFlagButtonStyles(currentLang)
+
         loadSavedSettings()
         setupListeners()
         requestInitialPermissions()
@@ -73,6 +79,27 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         updateDatabaseCounters()
+    }
+
+    private fun setAppLanguage(lang: String) {
+        val currentLang = prefs.getString(KEY_LANG, "sl") ?: "sl"
+        if (currentLang == lang) return
+
+        prefs.edit().putString(KEY_LANG, lang).apply()
+        updateFlagButtonStyles(lang)
+
+        val appLocales = LocaleListCompat.forLanguageTags(lang)
+        AppCompatDelegate.setApplicationLocales(appLocales)
+    }
+
+    private fun updateFlagButtonStyles(lang: String) {
+        if (lang == "sl") {
+            binding.btnLangSl.setBackgroundResource(R.drawable.bg_flag_selected)
+            binding.btnLangEn.setBackgroundResource(R.drawable.bg_flag_normal)
+        } else {
+            binding.btnLangSl.setBackgroundResource(R.drawable.bg_flag_normal)
+            binding.btnLangEn.setBackgroundResource(R.drawable.bg_flag_selected)
+        }
     }
 
     private fun loadSavedSettings() {
@@ -100,6 +127,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
+        binding.btnLangSl.setOnClickListener {
+            setAppLanguage("sl")
+        }
+
+        binding.btnLangEn.setOnClickListener {
+            setAppLanguage("en")
+        }
+
         binding.btnToggleTracking.setOnClickListener {
             saveCurrentSettings()
             val isRunning = LocationService.serviceState.value.isRunning
@@ -114,7 +149,7 @@ class MainActivity : AppCompatActivity() {
             saveCurrentSettings()
             val webhook = binding.etWebhookUrl.text.toString().trim()
             if (webhook.isBlank()) {
-                Toast.makeText(this, "Vnesite veljaven Webhook URL!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.toast_enter_webhook), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -133,7 +168,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnClearSynced.setOnClickListener {
             val deleted = dbHelper.deleteSyncedPoints()
-            Toast.makeText(this, "Pobrisano $deleted že poslanih točk.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.toast_cleared_points, deleted), Toast.LENGTH_SHORT).show()
             updateDatabaseCounters()
         }
     }
@@ -214,7 +249,7 @@ class MainActivity : AppCompatActivity() {
                     startActivity(fallbackIntent)
                 }
             } else {
-                Toast.makeText(this, "Aplikacija že ima neomejeno delovanje v ozadju!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.toast_battery_unrestricted), Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -231,36 +266,40 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateUiState(state: ServiceState) {
         if (state.isRunning) {
-            binding.btnToggleTracking.text = "USTAVI SLEDENJE"
+            binding.btnToggleTracking.text = getString(R.string.btn_stop_tracking)
             binding.btnToggleTracking.setBackgroundColor(ContextCompat.getColor(this, R.color.red_stop))
-            binding.tvServiceStatus.text = "Status: AKTIVNO - SNEMANJE"
+            binding.tvServiceStatus.text = getString(R.string.status_active)
             binding.tvServiceStatus.setTextColor(ContextCompat.getColor(this, R.color.teal_200))
         } else {
-            binding.btnToggleTracking.text = "ZAŽENI SLEDENJE"
+            binding.btnToggleTracking.text = getString(R.string.btn_start_tracking)
             binding.btnToggleTracking.setBackgroundColor(ContextCompat.getColor(this, R.color.green_start))
-            binding.tvServiceStatus.text = "Status: USTAVLJENO"
+            binding.tvServiceStatus.text = getString(R.string.status_stopped)
             binding.tvServiceStatus.setTextColor(ContextCompat.getColor(this, R.color.white))
         }
 
         state.lastPoint?.let { p ->
-            binding.tvLastLocation.text = String.format(Locale.US, "Zadnja lokacija: %.6f, %.6f", p.latitude, p.longitude)
+            binding.tvLastLocation.text = String.format(Locale.US, getString(R.string.last_location_format), p.latitude, p.longitude)
             val speedKmh = p.speed * 3.6f
             binding.tvLocationDetails.text = String.format(
                 Locale.US,
-                "Natančnost: ±%.1f m | Hitrost: %.1f km/h | Višina: %.1f m",
+                getString(R.string.location_details_format),
                 p.accuracy, speedKmh, p.altitude
             )
         }
 
-        binding.tvTotalPoints.text = "Vseh shranjenih točk v bazi: ${state.totalPoints}"
-        binding.tvUnsyncedPoints.text = "Čaka na prenos (offline zaloga): ${state.unsyncedPoints}"
-        binding.tvLastSyncStatus.text = "Zadnji prenos: ${state.lastSyncStatus}"
+        binding.tvTotalPoints.text = getString(R.string.total_points_format, state.totalPoints)
+        binding.tvUnsyncedPoints.text = getString(R.string.unsynced_points_format, state.unsyncedPoints)
+        binding.tvLastSyncStatus.text = if (state.lastSyncStatus.isBlank()) {
+            getString(R.string.last_sync_none)
+        } else {
+            getString(R.string.last_sync_format, state.lastSyncStatus)
+        }
     }
 
     private fun updateDatabaseCounters() {
         val total = dbHelper.getTotalCount()
         val unsynced = dbHelper.getUnsyncedCount()
-        binding.tvTotalPoints.text = "Vseh shranjenih točk v bazi: $total"
-        binding.tvUnsyncedPoints.text = "Čaka na prenos (offline zaloga): $unsynced"
+        binding.tvTotalPoints.text = getString(R.string.total_points_format, total)
+        binding.tvUnsyncedPoints.text = getString(R.string.unsynced_points_format, unsynced)
     }
 }

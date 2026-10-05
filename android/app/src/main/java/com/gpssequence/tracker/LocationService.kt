@@ -290,13 +290,15 @@ class LocationService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
         )
 
+        val title = getString(R.string.notification_title_format, t1Seconds, t2Seconds)
+        val stopActionTitle = getString(R.string.notification_action_stop)
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("GPS Sledenje aktivno (t1=${t1Seconds}s, t2=${t2Seconds}s)")
+            .setContentTitle(title)
             .setContentText(contentText)
             .setSmallIcon(R.drawable.ic_location)
             .setOngoing(true)
             .setContentIntent(pendingIntent)
-            .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Ustavi", stopPendingIntent)
+            .addAction(android.R.drawable.ic_menu_close_clear_cancel, stopActionTitle, stopPendingIntent)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()
     }

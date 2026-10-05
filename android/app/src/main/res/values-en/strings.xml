@@ -1,0 +1,44 @@
+<resources>
+    <string name="app_name">GPS Sequence</string>
+    <string name="app_subtitle">Robust background GPS recording</string>
+    <string name="channel_name">GPS Background Tracking</string>
+    <string name="channel_desc">Shows active background coordinate logging</string>
+    
+    <!-- Settings -->
+    <string name="sec_intervals">INTERVAL SETTINGS</string>
+    <string name="lbl_interval_t1">t1: Measurement (s)</string>
+    <string name="lbl_interval_t2">t2: Upload (s)</string>
+    <string name="lbl_webhook_url">Google Drive Webhook URL</string>
+    
+    <!-- Main button -->
+    <string name="btn_start_tracking">START TRACKING</string>
+    <string name="btn_stop_tracking">STOP TRACKING</string>
+    
+    <!-- System status -->
+    <string name="sec_system_status">SYSTEM STATUS</string>
+    <string name="status_stopped">Status: STOPPED</string>
+    <string name="status_active">Status: ACTIVE - RECORDING</string>
+    <string name="last_location_format">Last location: %.6f, %.6f</string>
+    <string name="last_location_none">Last location: --</string>
+    <string name="location_details_format">Accuracy: ±%.1f m | Speed: %.1f km/h | Altitude: %.1f m</string>
+    <string name="location_details_none">Accuracy: -- | Speed: --</string>
+    <string name="total_points_format">Total stored points in database: %1$d</string>
+    <string name="unsynced_points_format">Pending upload (offline buffer): %1$d</string>
+    <string name="last_sync_format">Last upload: %1$s</string>
+    <string name="last_sync_none">No uploads yet</string>
+    
+    <!-- Bottom buttons -->
+    <string name="btn_test_upload">Test upload</string>
+    <string name="btn_battery_unrestricted">Unrestricted battery</string>
+    <string name="btn_clear_synced">Clear already uploaded points from database</string>
+    
+    <!-- Alerts & Toasts -->
+    <string name="toast_permission_required">Precise location permission is required!</string>
+    <string name="toast_enter_webhook">Please enter a valid Webhook URL!</string>
+    <string name="toast_cleared_points">Deleted %1$d already uploaded points.</string>
+    <string name="toast_battery_unrestricted">App already has unrestricted background access!</string>
+    
+    <!-- Service Notification -->
+    <string name="notification_title_format">GPS Tracking active (t1=%1$ds, t2=%2$ds)</string>
+    <string name="notification_action_stop">Stop</string>
+</resources>

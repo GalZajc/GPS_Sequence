@@ -1,0 +1,55 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="36dp"
+    android:height="24dp"
+    android:viewportWidth="600"
+    android:viewportHeight="400">
+
+    <!-- Bel zgornji pas -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M0,0 h600 v133.33 h-600 z" />
+
+    <!-- Moder srednji pas -->
+    <path
+        android:fillColor="#0038A8"
+        android:pathData="M0,133.33 h600 v133.33 h-600 z" />
+
+    <!-- Rdeč spodnji pas -->
+    <path
+        android:fillColor="#ED1C24"
+        android:pathData="M0,266.67 h600 v133.33 h-600 z" />
+
+    <!-- Slovenski grb: rdeča obroba ščita -->
+    <path
+        android:fillColor="#ED1C24"
+        android:pathData="M122,46 L178,46 C195,46 206,58 206,90 C206,165 150,208 150,208 C150,208 94,165 94,90 C94,58 105,46 122,46 Z" />
+
+    <!-- Slovenski grb: modro polje ščita -->
+    <path
+        android:fillColor="#0038A8"
+        android:pathData="M125,50 L175,50 C190,50 200,60 200,90 C200,160 150,200 150,200 C150,200 100,160 100,90 C100,60 110,50 125,50 Z" />
+
+    <!-- Triglav (beli vrhovi) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M103,165 L126,142 L150,105 L174,142 L197,165 L150,198 Z" />
+
+    <!-- Modra valova pod Triglavom -->
+    <path
+        android:fillColor="#0038A8"
+        android:pathData="M106,158 C120,153 135,163 150,158 C165,153 180,163 194,158 L194,164 C180,169 165,159 150,164 C135,169 120,159 106,164 Z" />
+    <path
+        android:fillColor="#0038A8"
+        android:pathData="M110,172 C123,167 137,177 150,172 C163,167 177,177 190,172 L190,178 C177,183 163,173 150,178 C137,183 123,173 110,178 Z" />
+
+    <!-- Tri zvezde Celjskih grofov -->
+    <path
+        android:fillColor="#FFCC00"
+        android:pathData="M135,58 L137,65 L144,65 L138,69 L141,76 L135,71 L129,76 L132,69 L126,65 L133,65 Z" />
+    <path
+        android:fillColor="#FFCC00"
+        android:pathData="M165,58 L167,65 L174,65 L168,69 L171,76 L165,71 L159,76 L162,69 L156,65 L163,65 Z" />
+    <path
+        android:fillColor="#FFCC00"
+        android:pathData="M150,74 L152,81 L159,81 L153,85 L156,92 L150,87 L144,92 L147,85 L141,81 L148,81 Z" />
+</vector>
