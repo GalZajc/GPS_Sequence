@@ -1,0 +1,27 @@
+# Gradle & Android build artifacts
+.gradle/
+build/
+*/build/
+android/.gradle/
+android/build/
+android/app/build/
+*.apk
+*.aab
+local.properties
+.idea/
+*.iml
+.cxx/
+
+# Python cache & virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+
+# Operating System files
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log

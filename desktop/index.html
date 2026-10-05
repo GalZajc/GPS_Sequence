@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GPS Sequence - Satelitski pregledovalnik</title>
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Okvir za zemljevid (podpira rotacijo) -->
+  <div id="mapWrapper">
+    <div id="map"></div>
+  </div>
+
+  <!-- Minimalen gumb za meni (Burger) v zgornjem levem kotu -->
+  <button id="btnMenuToggle" class="burger-btn" title="Odpri nastavitve in podatke (M)" data-i18n-title="btn_menu_title">☰</button>
+
+  <!-- Stranski meni (Drawer) -->
+  <aside id="sideMenu" class="side-drawer" style="display:none;">
+    <div class="drawer-header">
+      <div class="drawer-title-group">
+        <span class="drawer-icon">🛰️</span>
+        <span class="drawer-title">GPS Sequence</span>
+      </div>
+      <div class="lang-switch-group">
+        <button id="btnLangSl" class="btn-lang active" title="Slovenščina">🇸🇮</button>
+        <button id="btnLangEn" class="btn-lang" title="English">🇬🇧</button>
+      </div>
+      <button id="btnCloseMenu" class="btn-close-drawer">✕</button>
+    </div>
+
+    <div class="drawer-content">
+      
+      <!-- Sled in datoteka -->
+      <div class="drawer-section">
+        <div class="section-title" data-i18n="sec_track">SLED IN DATOTEKA</div>
+        <div class="drawer-field">
+          <label for="trackSelect" class="drawer-label" data-i18n="lbl_active_track">Aktivna sled:</label>
+          <div class="input-with-button">
+            <select id="trackSelect" class="drawer-select"></select>
+            <button id="btnReloadTracks" class="btn-mini" title="Osveži seznam" data-i18n-title="title_reload_tracks">🔄</button>
+          </div>
+        </div>
+        <div class="drawer-field">
+          <label class="btn-file-upload">
+            <span data-i18n="btn_open_file">📂 Odpri lokalno .jsonl datoteko</span>
+            <input type="file" id="fileInput" accept=".jsonl,.json" style="display:none;">
+          </label>
+        </div>
+        <div class="drawer-field">
+          <div class="toggle-row">
+            <label for="chkAutoRefresh" data-i18n="lbl_auto_refresh">Samodejno osveževanje (V živo)</label>
+            <input type="checkbox" id="chkAutoRefresh" checked>
+          </div>
+        </div>
+        <div class="drawer-field" style="margin-top: 6px;">
+          <button id="btnExportCsv" class="btn-drawer-action" style="background: #1c1c24; border: 1px solid var(--accent-blue); color: var(--accent-blue);" data-i18n="btn_export_csv">
+            📥 Izvozi točke v CSV (t, lat, lon, alt)
+          </button>
+        </div>
+      </div>
+
+      <!-- Satelitski sloji -->
+      <div class="drawer-section">
+        <div class="section-title" data-i18n="sec_sat_map">SATELITSKI ZEMLJEVID</div>
+        <div class="drawer-field">
+          <select id="layerSelect" class="drawer-select">
+            <option value="google_hybrid" data-i18n="opt_layer_hybrid">Google Satelit (hibrid z imeni)</option>
+            <option value="google_sat" data-i18n="opt_layer_sat">Google Satelit (čisti)</option>
+            <option value="esri_sat" data-i18n="opt_layer_esri">Esri World Imagery</option>
+            <option value="osm" data-i18n="opt_layer_osm">OpenStreetMap</option>
+          </select>
+        </div>
+        <button id="btnFitBounds" class="btn-drawer-action" data-i18n="btn_fit_bounds">🔍 Centriraj celotno pot</button>
+      </div>
+
+      <!-- Načini sledenja in orientacije -->
+      <div class="drawer-section">
+        <div class="section-title" data-i18n="sec_view_camera">POGLED IN KAMERA</div>
+        <div class="toggle-row">
+          <span data-i18n="lbl_follow_mode">Sledenje točki (Center):</span>
+          <button id="btnToggleFollow" class="btn-mode-toggle" data-i18n="mode_off">IZKLOPLJENO</button>
+        </div>
+        <div class="toggle-row" style="margin-top: 8px;">
+          <span data-i18n="lbl_heading_mode">Orientacija v smeri (Heading):</span>
+          <button id="btnToggleHeading" class="btn-mode-toggle" data-i18n="mode_off">IZKLOPLJENO</button>
+        </div>
+        <div class="drawer-field" style="margin-top: 10px;">
+          <div class="toggle-row">
+            <label for="opacitySlider" class="drawer-label" data-i18n="lbl_timeline_opacity">Prosojnost časovnice:</label>
+            <span id="opacityValLabel" style="font-size: 11px; font-weight: bold; color: var(--accent-blue);">75%</span>
+          </div>
+          <input type="range" id="opacitySlider" min="10" max="100" value="75" style="width: 100%; cursor: pointer; accent-color: var(--accent-blue);">
+        </div>
+        <div class="drawer-field" style="margin-top: 8px;">
+          <div class="toggle-row">
+            <label for="chkPinTimeline" data-i18n="lbl_pin_timeline">Časovnica vedno vidna</label>
+            <input type="checkbox" id="chkPinTimeline" checked>
+          </div>
+        </div>
+      </div>
+
+      <!-- Renderiranje in sled -->
+      <div class="drawer-section">
+        <div class="section-title" data-i18n="sec_rendering">RENDERIRANJE IN SLED</div>
+        <div class="drawer-field">
+          <div class="toggle-row">
+            <label for="maxPointsSelect" class="drawer-label" data-i18n="lbl_max_points">Maks. točk (proti štekanju):</label>
+            <select id="maxPointsSelect" class="drawer-select" style="width: auto; padding: 4px 8px;">
+              <option value="1000" data-i18n="opt_pts_1k">1.000 točk</option>
+              <option value="3000" selected data-i18n="opt_pts_3k">3.000 točk</option>
+              <option value="5000" data-i18n="opt_pts_5k">5.000 točk</option>
+              <option value="10000" data-i18n="opt_pts_10k">10.000 točk</option>
+              <option value="0" data-i18n="opt_pts_all">Vse točke</option>
+            </select>
+          </div>
+        </div>
+        <div class="drawer-field" style="margin-top: 8px;">
+          <div class="toggle-row">
+            <label for="trajThickness" class="drawer-label" data-i18n="lbl_traj_thickness">Debelina sledi:</label>
+            <span id="trajThicknessLabel" style="font-size: 11px; font-weight: bold; color: var(--accent-blue);">2.5 px</span>
+          </div>
+          <input type="range" id="trajThickness" min="1" max="10" step="0.5" value="2.5" style="width: 100%; cursor: pointer; accent-color: var(--accent-blue);">
+        </div>
+        <div class="drawer-field" style="margin-top: 8px;">
+          <div class="toggle-row">
+            <label for="chkShowFuture" data-i18n="lbl_show_future">Prikaz prihodnje (črtkane) sledi</label>
+            <input type="checkbox" id="chkShowFuture">
+          </div>
+        </div>
+      </div>
+
+      <!-- HUD info o trenutni točki -->
+      <div class="drawer-section">
+        <div class="section-title" data-i18n="sec_current_point">TRENUTNA TOČKA</div>
+        <div class="hud-stats-grid">
+          <div class="stat-box"><span class="stat-label" data-i18n="lbl_hud_time">Čas:</span><span id="hudTime" class="stat-val">--:--:--</span></div>
+          <div class="stat-box"><span class="stat-label" data-i18n="lbl_hud_speed">Hitrost:</span><span id="hudSpeed" class="stat-val">-- km/h</span></div>
+          <div class="stat-box"><span class="stat-label" data-i18n="lbl_hud_alt">Višina:</span><span id="hudAlt" class="stat-val">-- m</span></div>
+          <div class="stat-box"><span class="stat-label" data-i18n="lbl_hud_acc">Natančnost:</span><span id="hudAcc" class="stat-val">±-- m</span></div>
+          <div class="stat-box full-width"><span class="stat-label" data-i18n="lbl_hud_coords">Koordinate:</span><span id="hudCoords" class="stat-val">-- , --</span></div>
+          <div class="stat-box full-width"><span class="stat-label" data-i18n="lbl_hud_total">Število točk:</span><span id="hudTotalPoints" class="stat-val">0</span></div>
+        </div>
+      </div>
+
+      <!-- Bližnjice na tipkovnici -->
+      <div class="drawer-section shortcuts-section">
+        <div class="section-title" data-i18n="sec_shortcuts">BLIŽNJICE NA TIPKOVNICI</div>
+        <div class="shortcut-list">
+          <div class="shortcut-item"><kbd data-i18n="sc_k_space">Preslednica</kbd> <span data-i18n="sc_d_space">Predvajaj / Zaustavi</span></div>
+          <div class="shortcut-item"><kbd>S</kbd> <span data-i18n="sc_d_s">Upočasni predvajanje</span></div>
+          <div class="shortcut-item"><kbd>D</kbd> <span data-i18n="sc_d_d">Pohitri predvajanje</span></div>
+          <div class="shortcut-item"><kbd>Shift+Enter</kbd> <span data-i18n="sc_d_shift_enter">Sledenje točki (Center)</span></div>
+          <div class="shortcut-item"><kbd>Ctrl+Shift+Enter</kbd> <span data-i18n="sc_d_ctrl_shift_enter">Obračanje v smeri (Heading)</span></div>
+          <div class="shortcut-item"><kbd>Alt+Scroll</kbd> <span data-i18n="sc_d_alt_scroll">Povečaj/pomanjšaj časovno os</span></div>
+          <div class="shortcut-item"><kbd>Scroll</kbd> <span data-i18n="sc_d_scroll">Premikaj časovnico levo/desno</span></div>
+          <div class="shortcut-item"><kbd data-i18n="sc_k_dblclick">Dvoklik</kbd> <span data-i18n="sc_d_dblclick">Kopiraj koordinate točke</span></div>
+          <div class="shortcut-item"><kbd>M</kbd> <span data-i18n="sc_d_m">Odpri / zapri ta meni</span></div>
+        </div>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- Oblaček na sredini ekrana ob spremembi hitrosti ali načina (Toast HUD) -->
+  <div id="centerIndicator" class="center-indicator" style="display:none;"></div>
+
+  <!-- Bližinski prikaz ob točki (Hover Tooltip na zemljevidu) -->
+  <div id="proximityTooltip" class="proximity-tooltip" style="display:none;">
+    <div class="tooltip-time" id="tipTime">--</div>
+    <div class="tooltip-coords" id="tipCoords">--</div>
+    <div class="tooltip-stats" id="tipStats">--</div>
+    <div class="tooltip-hint" id="tipHint" data-i18n="tooltip_hint">Dvoklik za kopiranje</div>
+  </div>
+
+  <!-- SPODNJA MINIMALISTIČNA ČASOVNICA (Čez celotno dno ekrana, z avtomatskim skrivanjem) -->
+  <footer class="bottom-timeline" id="timelineContainer">
+    <!-- Glavni časovni trak (YouTube style scrubber) -->
+    <div class="scrubber-wrapper" id="scrubberWrapper">
+      <div class="scrubber-track" id="scrubberTrack">
+        
+        <!-- Prikaz okna in markerja OD / DO (pravzaprav STA markerja) -->
+        <div class="window-range-highlight" id="windowHighlight">
+          <div class="window-handle left-handle" id="leftHandle" title="Nastavi ali povleci začetni čas (OD)">
+            <span class="handle-tag" id="leftHandleTag">OD</span>
+          </div>
+          <div class="window-bar" id="windowCenterBar" title="Povleci za premik časovnega okna (dvoklik za prikaz čez celotno časovnico)"></div>
+          <div class="window-handle right-handle" id="rightHandle" title="Nastavi ali povleci končni čas (DO)">
+            <span class="handle-tag" id="rightHandleTag">DO</span>
+          </div>
+        </div>
+
+        <!-- YouTube rdeča napredovalna vrstica za trenutni čas q -->
+        <div class="scrubber-progress" id="scrubberProgress"></div>
+        <!-- Rdeči kazalec / drsnik -->
+        <div class="scrubber-thumb" id="scrubberThumb"></div>
+        
+        <!-- Hover indikator -->
+        <div class="scrubber-hover-ghost" id="scrubberGhost" style="display:none;"></div>
+        <div class="scrubber-hover-bubble" id="scrubberBubble" style="display:none;">--:--:--</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- POPUP ZA IZBIRO ČASA (ČRN DESIGN s koledarčkom in U:M:S) -->
+  <div class="time-picker-popup dark-theme" id="timePickerPopup" style="display:none;">
+    <div class="picker-header">
+      <span class="picker-title" id="pickerModalTitle" data-i18n="picker_title">Nastavitev časa</span>
+      <button class="btn-close" id="btnClosePicker">✕</button>
+    </div>
+    
+    <div class="picker-body">
+      <!-- Koledarček za izbiro datuma (črna shema z rdečo ikono) -->
+      <label class="picker-label" data-i18n="picker_lbl_date">Datum:</label>
+      <input type="date" id="pickerDateInput" class="dark-date-input">
+
+      <!-- Izbira ure, minut, sekund -->
+      <label class="picker-label" data-i18n="picker_lbl_time">Čas (Ura : Minuta : Sekunda):</label>
+      <div class="time-inputs-grid">
+        <div class="time-input-col">
+          <input type="number" id="pickerHour" min="0" max="23" placeholder="00" class="dark-num-input">
+          <span class="time-sublabel" data-i18n="picker_sub_hour">Ura (0-23)</span>
+        </div>
+        <span class="time-sep">:</span>
+        <div class="time-input-col">
+          <input type="number" id="pickerMinute" min="0" max="59" placeholder="00" class="dark-num-input">
+          <span class="time-sublabel" data-i18n="picker_sub_min">Min (0-59)</span>
+        </div>
+        <span class="time-sep">:</span>
+        <div class="time-input-col">
+          <input type="number" id="pickerSecond" min="0" max="59" placeholder="00" class="dark-num-input">
+          <span class="time-sublabel" data-i18n="picker_sub_sec">Sek (0-59)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="picker-footer">
+      <button class="btn-picker-secondary" id="btnResetPicker" data-i18n="btn_reset">Ponastavi</button>
+      <button class="btn-picker-primary" id="btnApplyPicker" data-i18n="btn_apply">Uveljavi</button>
+    </div>
+  </div>
+
+  <!-- POPUP ZA DVOKLIK NA TOČKO (Kopiranje koordinat v odložišče) -->
+  <div class="copy-modal" id="copyModal" style="display:none;">
+    <div class="copy-modal-card">
+      <div class="copy-modal-header">
+        <span class="modal-title" data-i18n="modal_point_title">📍 GPS Točka</span>
+        <button class="btn-close" id="btnCloseCopyModal">✕</button>
+      </div>
+      <div class="copy-modal-body">
+        <div class="copy-detail-row">
+          <span class="detail-name" data-i18n="detail_time">Čas (t):</span>
+          <span class="detail-value" id="copyValTime">--</span>
+        </div>
+        <div class="copy-detail-row">
+          <span class="detail-name" data-i18n="detail_lat">Širina φ (Lat):</span>
+          <span class="detail-value" id="copyValLat">--</span>
+        </div>
+        <div class="copy-detail-row">
+          <span class="detail-name" data-i18n="detail_lon">Dolžina λ (Lon):</span>
+          <span class="detail-value" id="copyValLon">--</span>
+        </div>
+        <div class="copy-detail-row">
+          <span class="detail-name" data-i18n="detail_alt_spd">Višina / Hitrost:</span>
+          <span class="detail-value" id="copyValAltSpd">--</span>
+        </div>
+
+        <div class="copy-actions-group">
+          <button class="btn-copy-action" id="btnCopyTriplet" data-i18n="btn_copy_triplet">📋 Kopiraj trojico (t, lat, lon)</button>
+          <button class="btn-copy-action-sec" id="btnCopyCoords" data-i18n="btn_copy_coords">📋 Kopiraj koordinate (lat, lon)</button>
+          <button class="btn-copy-action-sec" id="btnCopyJson" data-i18n="btn_copy_json">📋 Kopiraj kot JSON</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="viewer.js"></script>
+</body>
+</html>
