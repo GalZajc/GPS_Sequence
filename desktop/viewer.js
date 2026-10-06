@@ -42,6 +42,12 @@ let dragInitialTStart = 0;
 let dragInitialTEnd = 0;
 let didDragMove = false;
 
+// Intervali dejanskega gibanja
+let movementIntervals = [];
+let showMovementIntervals = true;
+let movementWindowMs = 5 * 60 * 1000; // 5 minut
+let movementDistM = 30; // 30 metrov
+
 // Kartografski objekti
 let activePolyline = null;
 let futurePolyline = null;
@@ -100,8 +106,12 @@ const I18N = {
     opt_pts_5k: "5.000 točk",
     opt_pts_10k: "10.000 točk",
     opt_pts_all: "Vse točke",
+    opt_track_all_days: "Vsi dnevi (Združeno)",
     lbl_traj_thickness: "Debelina sledi:",
     lbl_show_future: "Prikaz prihodnje (črtkane) sledi",
+    lbl_show_movement: "Označi intervale gibanja na časovnici",
+    lbl_move_window: "Okno gibanja (min):",
+    lbl_move_dist: "Min. premik (m):",
     sec_current_point: "TRENUTNA TOČKA",
     lbl_hud_time: "Čas:",
     lbl_hud_speed: "Hitrost:",
@@ -202,8 +212,12 @@ const I18N = {
     opt_pts_5k: "5,000 points",
     opt_pts_10k: "10,000 points",
     opt_pts_all: "All points",
+    opt_track_all_days: "All days (Combined)",
     lbl_traj_thickness: "Track thickness:",
     lbl_show_future: "Show future (dashed) path",
+    lbl_show_movement: "Highlight movement intervals on timeline",
+    lbl_move_window: "Movement window (min):",
+    lbl_move_dist: "Min. movement (m):",
     sec_current_point: "CURRENT POINT",
     lbl_hud_time: "Time:",
     lbl_hud_speed: "Speed:",
@@ -329,6 +343,11 @@ function setLanguage(lang) {
   // Posodobi ikoni pik na zemljevidu (OD/DO ali FR/TO)
   if (startMarker) startMarker.setIcon(getBoundaryIcon(I18N[currentLang].tag_start));
   if (endMarker) endMarker.setIcon(getBoundaryIcon(I18N[currentLang].tag_end));
+
+  const allOpt = document.querySelector('#trackSelect option[value="__ALL__"]');
+  if (allOpt) {
+    allOpt.textContent = `★ ${t("opt_track_all_days")}`;
+  }
 
   // Posodobi gumba načinov v meniju
   const btnFollow = document.getElementById("btnToggleFollow");
@@ -543,7 +562,11 @@ async function loadTrackList() {
     files.forEach(f => {
       const opt = document.createElement("option");
       opt.value = f;
-      opt.textContent = f;
+      if (f === "__ALL__") {
+        opt.textContent = `★ ${t("opt_track_all_days")}`;
+      } else {
+        opt.textContent = f;
+      }
       select.appendChild(opt);
     });
 
@@ -633,6 +656,10 @@ function setGpsPoints(points, shouldFitBounds = true) {
   currentTime = tEnd;
   viewStart = tStart;
   viewEnd = tEnd;
+
+  computeMovementIntervals();
+  lastRenderedViewStart = null;
+  lastRenderedViewEnd = null;
 
   document.getElementById("hudTotalPoints").textContent = allPoints.length.toString();
 
@@ -724,7 +751,183 @@ function updateScrubberPosition() {
     }
   }
 
+  updateTimelineVisualLayers();
   renderPathOnMap();
+}
+
+/* ==========================================================
+   3b. VIZUALNE PLASTI ČASOVNICE: Ravnilo in zaznava gibanja
+   ========================================================== */
+let lastRenderedViewStart = null;
+let lastRenderedViewEnd = null;
+
+function updateTimelineVisualLayers() {
+  if (viewStart === lastRenderedViewStart && viewEnd === lastRenderedViewEnd) {
+    return;
+  }
+  lastRenderedViewStart = viewStart;
+  lastRenderedViewEnd = viewEnd;
+  renderMovementHighlights();
+  renderTimelineRuler();
+}
+
+function computeMovementIntervals() {
+  movementIntervals = [];
+  if (!allPoints || allPoints.length < 2) return;
+
+  const N = allPoints.length;
+  const isMoving = new Uint8Array(N);
+
+  for (let i = 0; i < N; i++) {
+    const pi = allPoints[i];
+    const maxT = pi.time_ms + movementWindowMs;
+    for (let j = i + 1; j < N; j++) {
+      const pj = allPoints[j];
+      if (pj.time_ms > maxT) break;
+      const d = haversineDistance(pi.lat, pi.lon, pj.lat, pj.lon);
+      if (d >= movementDistM) {
+        isMoving[i] = 1;
+        break;
+      }
+    }
+  }
+
+  let inInterval = false;
+  let intervalStart = 0;
+  let intervalEnd = 0;
+
+  for (let i = 0; i < N; i++) {
+    if (isMoving[i]) {
+      if (!inInterval) {
+        inInterval = true;
+        intervalStart = allPoints[i].time_ms;
+      }
+      intervalEnd = allPoints[i].time_ms;
+    } else {
+      if (inInterval) {
+        inInterval = false;
+        movementIntervals.push({ start: intervalStart, end: intervalEnd });
+      }
+    }
+  }
+  if (inInterval) {
+    movementIntervals.push({ start: intervalStart, end: intervalEnd });
+  }
+
+  // Združi sosednje intervale z razmikom pod 60 sekund
+  if (movementIntervals.length > 1) {
+    const merged = [];
+    let cur = movementIntervals[0];
+    for (let k = 1; k < movementIntervals.length; k++) {
+      const next = movementIntervals[k];
+      if (next.start - cur.end <= 60000) {
+        cur.end = Math.max(cur.end, next.end);
+      } else {
+        merged.push(cur);
+        cur = next;
+      }
+    }
+    merged.push(cur);
+    movementIntervals = merged;
+  }
+}
+
+function renderMovementHighlights() {
+  const layer = document.getElementById("movementHighlightLayer");
+  if (!layer) return;
+
+  if (!showMovementIntervals || movementIntervals.length === 0 || viewStart >= viewEnd) {
+    layer.style.display = "none";
+    layer.innerHTML = "";
+    return;
+  }
+
+  layer.style.display = "block";
+  const duration = Math.max(1000, viewEnd - viewStart);
+
+  let html = "";
+  for (let i = 0; i < movementIntervals.length; i++) {
+    const seg = movementIntervals[i];
+    if (seg.end < viewStart || seg.start > viewEnd) continue;
+
+    const cStart = Math.max(viewStart, seg.start);
+    const cEnd = Math.min(viewEnd, seg.end);
+
+    const leftPct = ((cStart - viewStart) / duration) * 100;
+    const rightPct = ((cEnd - viewStart) / duration) * 100;
+    const widthPct = Math.max(0.1, rightPct - leftPct);
+
+    html += `<div class="movement-segment" style="left: ${leftPct.toFixed(2)}%; width: ${widthPct.toFixed(2)}%;"></div>`;
+  }
+
+  layer.innerHTML = html;
+}
+
+function renderTimelineRuler() {
+  const rulerEl = document.getElementById("timelineRuler");
+  if (!rulerEl) return;
+
+  if (allPoints.length === 0 || viewStart >= viewEnd) {
+    rulerEl.innerHTML = "";
+    return;
+  }
+
+  const duration = Math.max(1000, viewEnd - viewStart);
+  const durationHours = duration / (3600 * 1000);
+
+  let hourStep = 1;
+  if (durationHours > 120) {
+    hourStep = 24;
+  } else if (durationHours > 60) {
+    hourStep = 6;
+  } else if (durationHours > 24) {
+    hourStep = 2;
+  } else {
+    hourStep = 1;
+  }
+
+  let html = "";
+
+  // 1. Dnevi (polnoči 00:00:00)
+  const startDate = new Date(viewStart);
+  startDate.setHours(0, 0, 0, 0);
+  let dayCursor = startDate.getTime();
+
+  while (dayCursor <= viewEnd + 86400000) {
+    if (dayCursor >= viewStart && dayCursor <= viewEnd) {
+      const pct = ((dayCursor - viewStart) / duration) * 100;
+      const dObj = new Date(dayCursor);
+      const dayLabel = `${dObj.getDate()}. ${dObj.getMonth() + 1}.`;
+      html += `<div class="ruler-tick day" style="left: ${pct.toFixed(2)}%;"></div>`;
+      html += `<div class="ruler-label day-label" style="left: ${pct.toFixed(2)}%;">${dayLabel}</div>`;
+    }
+    dayCursor += 86400000;
+  }
+
+  // 2. Ure
+  if (hourStep < 24) {
+    const startHourDate = new Date(viewStart);
+    startHourDate.setMinutes(0, 0, 0);
+    let hourCursor = startHourDate.getTime();
+    if (hourCursor < viewStart) hourCursor += 3600000;
+
+    while (hourCursor <= viewEnd) {
+      const pct = ((hourCursor - viewStart) / duration) * 100;
+      const hObj = new Date(hourCursor);
+      const h = hObj.getHours();
+
+      if (h % hourStep === 0 && h !== 0) {
+        html += `<div class="ruler-tick hour" style="left: ${pct.toFixed(2)}%;"></div>`;
+        if (durationHours <= 18) {
+          const hStr = `${String(h).padStart(2, "0")}:00`;
+          html += `<div class="ruler-label" style="left: ${pct.toFixed(2)}%;">${hStr}</div>`;
+        }
+      }
+      hourCursor += 3600000;
+    }
+  }
+
+  rulerEl.innerHTML = html;
 }
 
 function renderPathOnMap() {
@@ -909,6 +1112,8 @@ function setupScrubberEvents() {
   const rightHandle = document.getElementById("rightHandle");
   const centerBar = document.getElementById("windowCenterBar");
 
+  let justFinishedDrag = false;
+
   // Vlečenje levega markerja OD
   if (leftHandle) {
     leftHandle.addEventListener("mousedown", (e) => {
@@ -919,6 +1124,13 @@ function setupScrubberEvents() {
       dragInitialTStart = tStart;
       dragInitialTEnd = tEnd;
       didDragMove = false;
+    });
+
+    leftHandle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      if (justFinishedDrag || didDragMove) return;
+      openTimePicker('start');
     });
   }
 
@@ -932,6 +1144,13 @@ function setupScrubberEvents() {
       dragInitialTStart = tStart;
       dragInitialTEnd = tEnd;
       didDragMove = false;
+    });
+
+    rightHandle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      if (justFinishedDrag || didDragMove) return;
+      openTimePicker('end');
     });
   }
 
@@ -1006,10 +1225,11 @@ function setupScrubberEvents() {
   });
 
   window.addEventListener("mouseup", () => {
-    if (dragMode === 'leftHandle' && !didDragMove) {
-      openTimePicker('start');
-    } else if (dragMode === 'rightHandle' && !didDragMove) {
-      openTimePicker('end');
+    if (dragMode) {
+      if (didDragMove) {
+        justFinishedDrag = true;
+        setTimeout(() => { justFinishedDrag = false; }, 120);
+      }
     }
     dragMode = null;
     isDraggingScrubber = false;
@@ -1284,7 +1504,13 @@ function openTimePicker(target) {
   const yyyy = dateObj.getFullYear();
   const mm = String(dateObj.getMonth() + 1).padStart(2, "0");
   const dd = String(dateObj.getDate()).padStart(2, "0");
-  document.getElementById("pickerDateInput").value = `${yyyy}-${mm}-${dd}`;
+  const dateInput = document.getElementById("pickerDateInput");
+  dateInput.value = `${yyyy}-${mm}-${dd}`;
+
+  if (globalTMin && globalTMax) {
+    dateInput.min = formatInputDate(globalTMin);
+    dateInput.max = formatInputDate(globalTMax);
+  }
 
   document.getElementById("pickerHour").value = dateObj.getHours();
   document.getElementById("pickerMinute").value = dateObj.getMinutes();
@@ -1333,7 +1559,15 @@ function applyTimePicker() {
 
   const [year, month, day] = dateStr.split("-").map(Number);
   const newDate = new Date(year, month - 1, day, h, m, s, 0);
-  const newMs = newDate.getTime();
+  let newMs = newDate.getTime();
+
+  if (isNaN(newMs)) {
+    flashCenterIndicator(t("toast_invalid_date"));
+    return;
+  }
+
+  if (globalTMin && newMs < globalTMin) newMs = globalTMin;
+  if (globalTMax && newMs > globalTMax) newMs = globalTMax;
 
   if (activePickerTarget === "start") {
     if (newMs >= tEnd) {
@@ -1349,8 +1583,15 @@ function applyTimePicker() {
     tEnd = newMs;
   }
 
-  if (tStart < viewStart) viewStart = tStart;
-  if (tEnd > viewEnd) viewEnd = tEnd;
+  // Zagotovi, da se časovna os prilagodi izbranemu oknu, če je izbrano okno zunaj trenutnega pogleda
+  const pickedDur = Math.max(60000, tEnd - tStart);
+  if (tStart < viewStart || tEnd > viewEnd) {
+    const pad = Math.round(pickedDur * 0.1);
+    viewStart = Math.max(globalTMin, tStart - pad);
+    viewEnd = Math.min(globalTMax, tEnd + pad);
+  }
+  if (viewStart < globalTMin) viewStart = globalTMin;
+  if (viewEnd > globalTMax) viewEnd = globalTMax;
 
   updateScrubberPosition();
   closeTimePicker();
@@ -1533,12 +1774,6 @@ function setupEventListeners() {
   const btnHeading = document.getElementById("btnToggleHeading");
   btnHeading.addEventListener("click", toggleHeadingMode);
 
-  // Gumba/markerja OD in DO (kliki se obravnavajo tudi v setupScrubberEvents)
-  const leftH = document.getElementById("leftHandle") || document.getElementById("btnStartTime");
-  if (leftH) leftH.addEventListener("click", () => openTimePicker("start"));
-  const rightH = document.getElementById("rightHandle") || document.getElementById("btnEndTime");
-  if (rightH) rightH.addEventListener("click", () => openTimePicker("end"));
-
   document.getElementById("btnClosePicker").addEventListener("click", closeTimePicker);
   document.getElementById("btnApplyPicker").addEventListener("click", applyTimePicker);
   document.getElementById("btnResetPicker").addEventListener("click", resetTimePicker);
@@ -1591,6 +1826,40 @@ function setupEventListeners() {
     chkShowFuture.addEventListener("change", (e) => {
       showFuturePath = e.target.checked;
       renderPathOnMap();
+    });
+  }
+
+  // Nastavitve intervalov gibanja na časovnici
+  const chkShowMovement = document.getElementById("chkShowMovement");
+  if (chkShowMovement) {
+    chkShowMovement.checked = showMovementIntervals;
+    chkShowMovement.addEventListener("change", (e) => {
+      showMovementIntervals = e.target.checked;
+      renderMovementHighlights();
+    });
+  }
+
+  const moveWindowInput = document.getElementById("moveWindowInput");
+  if (moveWindowInput) {
+    moveWindowInput.addEventListener("change", (e) => {
+      const val = parseInt(e.target.value, 10);
+      if (val > 0) {
+        movementWindowMs = val * 60 * 1000;
+        computeMovementIntervals();
+        renderMovementHighlights();
+      }
+    });
+  }
+
+  const moveDistInput = document.getElementById("moveDistInput");
+  if (moveDistInput) {
+    moveDistInput.addEventListener("change", (e) => {
+      const val = parseInt(e.target.value, 10);
+      if (val > 0) {
+        movementDistM = val;
+        computeMovementIntervals();
+        renderMovementHighlights();
+      }
     });
   }
 
@@ -1889,4 +2158,13 @@ function formatTimeOnly(ms) {
   const d = new Date(ms);
   const locale = currentLang === "en" ? "en-GB" : "sl-SI";
   return d.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
+
+function formatInputDate(ms) {
+  if (!ms || isNaN(ms)) return "";
+  const d = new Date(ms);
+  const Y = d.getFullYear();
+  const M = String(d.getMonth() + 1).padStart(2, "0");
+  const D = String(d.getDate()).padStart(2, "0");
+  return `${Y}-${M}-${D}`;
 }

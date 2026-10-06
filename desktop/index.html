@@ -136,6 +136,24 @@
             <input type="checkbox" id="chkShowFuture">
           </div>
         </div>
+        <div class="drawer-field" style="margin-top: 8px;">
+          <div class="toggle-row">
+            <label for="chkShowMovement" data-i18n="lbl_show_movement">Označi intervale gibanja na časovnici</label>
+            <input type="checkbox" id="chkShowMovement" checked>
+          </div>
+        </div>
+        <div class="drawer-field" style="margin-top: 8px;">
+          <div class="toggle-row">
+            <label for="moveWindowInput" class="drawer-label" data-i18n="lbl_move_window">Okno gibanja (min):</label>
+            <input type="number" id="moveWindowInput" min="1" max="60" value="5" class="drawer-input-mini" style="width: 55px; text-align: center;">
+          </div>
+        </div>
+        <div class="drawer-field" style="margin-top: 6px;">
+          <div class="toggle-row">
+            <label for="moveDistInput" class="drawer-label" data-i18n="lbl_move_dist">Min. premik (m):</label>
+            <input type="number" id="moveDistInput" min="5" max="500" value="30" class="drawer-input-mini" style="width: 55px; text-align: center;">
+          </div>
+        </div>
       </div>
 
       <!-- HUD info o trenutni točki -->
@@ -183,10 +201,16 @@
 
   <!-- SPODNJA MINIMALISTIČNA ČASOVNICA (Čez celotno dno ekrana, z avtomatskim skrivanjem) -->
   <footer class="bottom-timeline" id="timelineContainer">
+    <!-- Ravnilo z oznakami ur in dni na vrhu časovnice -->
+    <div class="timeline-ruler" id="timelineRuler"></div>
+
     <!-- Glavni časovni trak (YouTube style scrubber) -->
     <div class="scrubber-wrapper" id="scrubberWrapper">
       <div class="scrubber-track" id="scrubberTrack">
         
+        <!-- Sloj za označevanje intervalov dejanskega gibanja -->
+        <div class="movement-highlight-layer" id="movementHighlightLayer"></div>
+
         <!-- Prikaz okna in markerja OD / DO (pravzaprav STA markerja) -->
         <div class="window-range-highlight" id="windowHighlight">
           <div class="window-handle left-handle" id="leftHandle" title="Nastavi ali povleci začetni čas (OD)">

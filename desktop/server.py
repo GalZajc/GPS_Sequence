@@ -45,9 +45,10 @@ class GpsViewerHandler(SimpleHTTPRequestHandler):
     def handle_api_tracks(self):
         tracks_dir = get_tracks_dir()
         try:
-            files = [f for f in os.listdir(tracks_dir) if f.endswith(".jsonl") or f.endswith(".json")]
+            files = [f for f in os.listdir(tracks_dir) if (f.endswith(".jsonl") or f.endswith(".json")) and not f.startswith(".")]
             files.sort(reverse=True) # Najnovejši najprej
-            data = json.dumps(files).encode("utf-8")
+            result = ["__ALL__"] + files if len(files) > 0 else []
+            data = json.dumps(result).encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.send_header("Access-Control-Allow-Origin", "*")
@@ -59,6 +60,40 @@ class GpsViewerHandler(SimpleHTTPRequestHandler):
 
     def handle_api_track_file(self, filename):
         tracks_dir = get_tracks_dir()
+
+        if filename in ("__ALL__", "ALL", "all"):
+            try:
+                files = [f for f in os.listdir(tracks_dir) if (f.endswith(".jsonl") or f.endswith(".json")) and not f.startswith(".")]
+                files.sort() # Kronološki vrstni red po datumu datoteke
+                points = []
+                seen_times = set()
+                for fname in files:
+                    fpath = os.path.join(tracks_dir, fname)
+                    with open(fpath, "r", encoding="utf-8") as f:
+                        for line in f:
+                            line = line.strip()
+                            if line:
+                                try:
+                                    p = json.loads(line)
+                                    t = p.get("time_ms")
+                                    if t and t not in seen_times:
+                                        seen_times.add(t)
+                                        points.append(p)
+                                except Exception:
+                                    pass
+                points.sort(key=lambda x: x.get("time_ms", 0))
+                data = json.dumps(points).encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.send_header("Content-Length", str(len(data)))
+                self.end_headers()
+                self.wfile.write(data)
+                return
+            except Exception as e:
+                self.send_error(500, str(e))
+                return
+
         filepath = os.path.join(tracks_dir, filename)
 
         if not os.path.exists(filepath):
