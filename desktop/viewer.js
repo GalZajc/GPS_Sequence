@@ -873,18 +873,8 @@ function renderTimelineRuler() {
   }
 
   const duration = Math.max(1000, viewEnd - viewStart);
+  const durationMin = duration / 60000;
   const durationHours = duration / (3600 * 1000);
-
-  let hourStep = 1;
-  if (durationHours > 120) {
-    hourStep = 24;
-  } else if (durationHours > 60) {
-    hourStep = 6;
-  } else if (durationHours > 24) {
-    hourStep = 2;
-  } else {
-    hourStep = 1;
-  }
 
   let html = "";
 
@@ -904,26 +894,73 @@ function renderTimelineRuler() {
     dayCursor += 86400000;
   }
 
-  // 2. Ure
-  if (hourStep < 24) {
-    const startHourDate = new Date(viewStart);
-    startHourDate.setMinutes(0, 0, 0);
-    let hourCursor = startHourDate.getTime();
-    if (hourCursor < viewStart) hourCursor += 3600000;
+  // 2. Ure in minute glede na raven zoomiranja
+  if (durationHours > 120) {
+    // Več kot 5 dni: samo dnevi
+  } else if (durationHours > 36) {
+    // 1.5 do 5 dni: ure na vsakih 6 ur
+    stepThroughHours(6, false);
+  } else if (durationHours > 12) {
+    // 12 do 36 ur: ure na vsaki 2 uri
+    stepThroughHours(2, true);
+  } else if (durationHours > 3) {
+    // 3 do 12 ur: vsaka ura z napisom
+    stepThroughHours(1, true);
+  } else if (durationMin > 30) {
+    // 30 min do 3 ure: vsaka ura z napisom, črtice na 15 minut
+    stepThroughHours(1, true);
+    stepThroughMinutes(15, false);
+  } else if (durationMin > 8) {
+    // 8 do 30 min (privzeto 16.6 min = 1000 s): ure z napisom, črtice na 2 minuti
+    stepThroughHours(1, true);
+    stepThroughMinutes(2, true);
+  } else {
+    // Pod 8 minut: vsaka minuta z napisom
+    stepThroughMinutes(1, true);
+  }
 
-    while (hourCursor <= viewEnd) {
-      const pct = ((hourCursor - viewStart) / duration) * 100;
-      const hObj = new Date(hourCursor);
+  function stepThroughHours(stepH, showLabels) {
+    const d = new Date(viewStart);
+    d.setMinutes(0, 0, 0);
+    let cursor = d.getTime();
+    if (cursor < viewStart) cursor += 3600000;
+
+    while (cursor <= viewEnd) {
+      const hObj = new Date(cursor);
       const h = hObj.getHours();
-
-      if (h % hourStep === 0 && h !== 0) {
+      if (h % stepH === 0 && h !== 0) {
+        const pct = ((cursor - viewStart) / duration) * 100;
         html += `<div class="ruler-tick hour" style="left: ${pct.toFixed(2)}%;"></div>`;
-        if (durationHours <= 18) {
+        if (showLabels) {
           const hStr = `${String(h).padStart(2, "0")}:00`;
           html += `<div class="ruler-label" style="left: ${pct.toFixed(2)}%;">${hStr}</div>`;
         }
       }
-      hourCursor += 3600000;
+      cursor += 3600000;
+    }
+  }
+
+  function stepThroughMinutes(stepM, showLabels) {
+    const d = new Date(viewStart);
+    d.setSeconds(0, 0, 0);
+    let cursor = d.getTime();
+    const rem = Math.floor(cursor / 60000) % stepM;
+    if (rem !== 0) cursor += (stepM - rem) * 60000;
+    if (cursor < viewStart) cursor += stepM * 60000;
+
+    while (cursor <= viewEnd) {
+      const mObj = new Date(cursor);
+      const min = mObj.getMinutes();
+      if (min % 60 !== 0) { // Ne riši čez polne ure
+        const pct = ((cursor - viewStart) / duration) * 100;
+        html += `<div class="ruler-tick minor" style="left: ${pct.toFixed(2)}%;"></div>`;
+        if (showLabels && min % (stepM * 2) === 0) {
+          const h = mObj.getHours();
+          const str = `${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
+          html += `<div class="ruler-label" style="left: ${pct.toFixed(2)}%; font-size: 8px;">${str}</div>`;
+        }
+      }
+      cursor += stepM * 60000;
     }
   }
 
@@ -1112,15 +1149,21 @@ function setupScrubberEvents() {
   const rightHandle = document.getElementById("rightHandle");
   const centerBar = document.getElementById("windowCenterBar");
 
-  let justFinishedDrag = false;
+  let handleDownTime = 0;
+  let handleDownX = 0;
+  let handleDownY = 0;
+  let handleDragged = false;
 
   // Vlečenje levega markerja OD
   if (leftHandle) {
     leftHandle.addEventListener("mousedown", (e) => {
       e.stopPropagation();
-      e.preventDefault();
       dragMode = 'leftHandle';
       dragStartX = e.clientX;
+      handleDownTime = performance.now();
+      handleDownX = e.clientX;
+      handleDownY = e.clientY;
+      handleDragged = false;
       dragInitialTStart = tStart;
       dragInitialTEnd = tEnd;
       didDragMove = false;
@@ -1129,8 +1172,6 @@ function setupScrubberEvents() {
     leftHandle.addEventListener("click", (e) => {
       e.stopPropagation();
       e.preventDefault();
-      if (justFinishedDrag || didDragMove) return;
-      openTimePicker('start');
     });
   }
 
@@ -1138,9 +1179,12 @@ function setupScrubberEvents() {
   if (rightHandle) {
     rightHandle.addEventListener("mousedown", (e) => {
       e.stopPropagation();
-      e.preventDefault();
       dragMode = 'rightHandle';
       dragStartX = e.clientX;
+      handleDownTime = performance.now();
+      handleDownX = e.clientX;
+      handleDownY = e.clientY;
+      handleDragged = false;
       dragInitialTStart = tStart;
       dragInitialTEnd = tEnd;
       didDragMove = false;
@@ -1149,8 +1193,6 @@ function setupScrubberEvents() {
     rightHandle.addEventListener("click", (e) => {
       e.stopPropagation();
       e.preventDefault();
-      if (justFinishedDrag || didDragMove) return;
-      openTimePicker('end');
     });
   }
 
@@ -1197,7 +1239,8 @@ function setupScrubberEvents() {
     const rect = track.getBoundingClientRect();
     const viewDuration = Math.max(1000, viewEnd - viewStart);
 
-    if (Math.abs(e.clientX - dragStartX) > 2) {
+    if (Math.abs(e.clientX - handleDownX) > 2 || Math.abs(e.clientY - handleDownY) > 2) {
+      handleDragged = true;
       didDragMove = true;
     }
 
@@ -1224,11 +1267,18 @@ function setupScrubberEvents() {
     }
   });
 
-  window.addEventListener("mouseup", () => {
-    if (dragMode) {
-      if (didDragMove) {
-        justFinishedDrag = true;
-        setTimeout(() => { justFinishedDrag = false; }, 120);
+  window.addEventListener("mouseup", (e) => {
+    if (dragMode === 'leftHandle') {
+      const elapsed = performance.now() - handleDownTime;
+      const moved = handleDragged || Math.abs(e.clientX - handleDownX) > 2;
+      if (!moved && elapsed < 500) {
+        openTimePicker('start');
+      }
+    } else if (dragMode === 'rightHandle') {
+      const elapsed = performance.now() - handleDownTime;
+      const moved = handleDragged || Math.abs(e.clientX - handleDownX) > 2;
+      if (!moved && elapsed < 500) {
+        openTimePicker('end');
       }
     }
     dragMode = null;
@@ -1510,6 +1560,17 @@ function openTimePicker(target) {
   if (globalTMin && globalTMax) {
     dateInput.min = formatInputDate(globalTMin);
     dateInput.max = formatInputDate(globalTMax);
+
+    const hintEl = document.getElementById("pickerDateHint");
+    if (hintEl) {
+      const minD = new Date(globalTMin);
+      const maxD = new Date(globalTMax);
+      const minStr = `${minD.getDate()}. ${minD.getMonth() + 1}. ${minD.getFullYear()}`;
+      const maxStr = `${maxD.getDate()}. ${maxD.getMonth() + 1}. ${maxD.getFullYear()}`;
+      hintEl.textContent = currentLang === "sl"
+        ? `📅 Na voljo meritve: ${minStr} – ${maxStr}`
+        : `📅 Available records: ${minStr} – ${maxStr}`;
+    }
   }
 
   document.getElementById("pickerHour").value = dateObj.getHours();

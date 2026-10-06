@@ -411,7 +411,7 @@ body, html {
   border: none !important;
   border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
   box-sizing: border-box;
-  height: 38px;
+  height: 44px;
   transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -424,53 +424,55 @@ body, html {
 .timeline-ruler {
   width: calc(100% - 8px);
   margin: 0 4px;
-  height: 12px;
+  height: 16px;
   position: relative;
   overflow: hidden;
   pointer-events: none;
   user-select: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .ruler-tick {
   position: absolute;
   bottom: 0;
   width: 1px;
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.35);
   transform: translateX(-50%);
   pointer-events: none;
 }
 .ruler-tick.minor {
-  height: 3px;
-  background: rgba(255, 255, 255, 0.18);
+  height: 4px;
+  background: rgba(255, 255, 255, 0.3);
 }
 .ruler-tick.hour {
-  height: 6px;
-  background: rgba(255, 255, 255, 0.42);
+  height: 8px;
+  width: 1.5px;
+  background: #00e5ff;
 }
 .ruler-tick.day {
-  height: 11px;
-  width: 1.5px;
-  background: var(--accent-blue);
-  box-shadow: 0 0 4px rgba(0, 176, 255, 0.6);
+  height: 14px;
+  width: 2.5px;
+  background: #ffab00;
+  box-shadow: 0 0 6px rgba(255, 171, 0, 0.85);
 }
 
 .ruler-label {
   position: absolute;
-  bottom: 1px;
+  top: 0px;
   transform: translateX(-50%);
-  font-size: 8px;
+  font-size: 9px;
   font-family: monospace;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(255, 255, 255, 0.85);
   pointer-events: none;
   white-space: nowrap;
 }
 .ruler-label.day-label {
-  bottom: 2px;
-  font-size: 8.5px;
+  top: 0px;
+  font-size: 10px;
   font-weight: 800;
-  color: #00d9ff;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+  color: #ffab00;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.95);
 }
 
 /* Scrubber trak */
@@ -486,9 +488,9 @@ body, html {
 
 .scrubber-track {
   width: 100%;
-  height: 6px;
+  height: 8px;
   background: rgba(255, 255, 255, 0.22);
-  border-radius: 3px;
+  border-radius: 4px;
   position: relative;
   transition: height 0.12s ease;
 }
@@ -496,37 +498,42 @@ body, html {
 /* Označeni intervali dejanskega gibanja */
 .movement-highlight-layer {
   position: absolute;
-  top: 0;
-  bottom: 0;
+  top: -2px;
+  bottom: -2px;
   left: 0;
   right: 0;
   pointer-events: none;
-  border-radius: 3px;
-  overflow: hidden;
+  border-radius: 4px;
+  overflow: visible;
+  z-index: 5;
 }
 .movement-segment {
   position: absolute;
   top: 0;
   bottom: 0;
-  background: rgba(0, 230, 255, 0.42);
-  border-top: 1px solid rgba(0, 230, 255, 0.85);
-  border-bottom: 1px solid rgba(0, 230, 255, 0.85);
-  border-radius: 2px;
-  box-shadow: 0 0 5px rgba(0, 230, 255, 0.45);
+  background: rgba(0, 229, 255, 0.7);
+  border: 1px solid #00e5ff;
+  border-radius: 3px;
+  box-shadow: 0 0 6px rgba(0, 229, 255, 0.9);
   pointer-events: none;
 }
 
 .drawer-input-mini {
-  background: #18181c;
-  border: 1px solid var(--border-color);
-  color: #fff;
-  border-radius: 4px;
-  padding: 3px 6px;
-  font-size: 11px;
+  background: #121216 !important;
+  color: #00e5ff !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  border-radius: 6px !important;
+  padding: 4px 6px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  font-family: monospace !important;
+  color-scheme: dark !important;
+  outline: none !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6) !important;
 }
 .drawer-input-mini:focus {
-  border-color: var(--accent-blue);
-  outline: none;
+  border-color: #00e5ff !important;
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.5) !important;
 }
 
 .scrubber-wrapper:hover .scrubber-track {
