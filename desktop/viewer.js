@@ -552,28 +552,29 @@ async function loadTrackList() {
     const res = await fetch("/api/tracks");
     if (!res.ok) throw new Error("API ni na voljo");
     const files = await res.json();
-    select.innerHTML = "";
+    if (select) {
+      select.innerHTML = "";
+      if (files.length === 0) {
+        select.innerHTML = `<option value="">Ni najdenih sledi</option>`;
+        return;
+      }
 
-    if (files.length === 0) {
-      select.innerHTML = `<option value="">Ni najdenih sledi</option>`;
-      return;
+      files.forEach(f => {
+        const opt = document.createElement("option");
+        opt.value = f;
+        if (f === "__ALL__") {
+          opt.textContent = `★ ${t("opt_track_all_days")}`;
+        } else {
+          opt.textContent = f;
+        }
+        select.appendChild(opt);
+      });
     }
 
-    files.forEach(f => {
-      const opt = document.createElement("option");
-      opt.value = f;
-      if (f === "__ALL__") {
-        opt.textContent = `★ ${t("opt_track_all_days")}`;
-      } else {
-        opt.textContent = f;
-      }
-      select.appendChild(opt);
-    });
-
-    loadTrackFile(files[0]);
+    loadTrackFile((files && files.length > 0) ? files[0] : "__ALL__");
   } catch (err) {
-    console.warn("Lokalni strežnik /api/tracks ni dosegljiv, čakamo na ročno datoteko.", err);
-    select.innerHTML = `<option value="">Odprite .jsonl datoteko</option>`;
+    console.warn("Lokalni strežnik /api/tracks ni dosegljiv, nalagam __ALL__.", err);
+    loadTrackFile("__ALL__");
   }
 }
 
@@ -591,8 +592,7 @@ async function loadTrackFile(filename) {
 
 async function pollCurrentTrack() {
   const select = document.getElementById("trackSelect");
-  const filename = select.value;
-  if (!filename) return;
+  const filename = (select && select.value) ? select.value : "__ALL__";
 
   try {
     const res = await fetch(`/api/track/${encodeURIComponent(filename)}`);
@@ -1811,31 +1811,36 @@ function setupEventListeners() {
 
   document.getElementById("btnFitBounds").addEventListener("click", fitBoundsToTrack);
 
-  // Sled
-  document.getElementById("trackSelect").addEventListener("change", (e) => loadTrackFile(e.target.value));
-  document.getElementById("btnReloadTracks").addEventListener("click", loadTrackList);
+  // Sled (če je element prisoten)
+  const trackSel = document.getElementById("trackSelect");
+  if (trackSel) trackSel.addEventListener("change", (e) => loadTrackFile(e.target.value));
+  const btnReload = document.getElementById("btnReloadTracks");
+  if (btnReload) btnReload.addEventListener("click", loadTrackList);
 
-  // Lokalna datoteka
-  document.getElementById("fileInput").addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-      try {
-        const text = evt.target.result;
-        const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
-        const points = [];
-        for (const line of lines) {
-          try { points.push(JSON.parse(line)); } catch (err) {}
+  // Lokalna datoteka (če je element prisoten)
+  const fileIn = document.getElementById("fileInput");
+  if (fileIn) {
+    fileIn.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        try {
+          const text = evt.target.result;
+          const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+          const points = [];
+          for (const line of lines) {
+            try { points.push(JSON.parse(line)); } catch (err) {}
+          }
+          setGpsPoints(points);
+          flashCenterIndicator(`${t("toast_loaded")} ${points.length}`);
+        } catch (err) {
+          flashCenterIndicator("Napaka pri branju: " + err.message);
         }
-        setGpsPoints(points);
-        flashCenterIndicator(`${t("toast_loaded")} ${points.length}`);
-      } catch (err) {
-        flashCenterIndicator("Napaka pri branju: " + err.message);
-      }
-    };
-    reader.readAsText(file);
-  });
+      };
+      reader.readAsText(file);
+    });
+  }
 
   // Načini sledenja gumbi v meniju
   const btnFollow = document.getElementById("btnToggleFollow");

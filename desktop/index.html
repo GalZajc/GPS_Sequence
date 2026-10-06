@@ -7,7 +7,7 @@
   
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="style.css?v=20261006_4" />
+  <link rel="stylesheet" href="style.css?v=20261006_5" />
 </head>
 <body>
 
@@ -39,35 +39,6 @@
 
     <div class="drawer-content">
       
-      <!-- Sled in datoteka -->
-      <div class="drawer-section">
-        <div class="section-title" data-i18n="sec_track">SLED IN DATOTEKA</div>
-        <div class="drawer-field">
-          <label for="trackSelect" class="drawer-label" data-i18n="lbl_active_track">Aktivna sled:</label>
-          <div class="input-with-button">
-            <select id="trackSelect" class="drawer-select"></select>
-            <button id="btnReloadTracks" class="btn-mini" title="Osveži seznam" data-i18n-title="title_reload_tracks">🔄</button>
-          </div>
-        </div>
-        <div class="drawer-field">
-          <label class="btn-file-upload">
-            <span data-i18n="btn_open_file">📂 Odpri lokalno .jsonl datoteko</span>
-            <input type="file" id="fileInput" accept=".jsonl,.json" style="display:none;">
-          </label>
-        </div>
-        <div class="drawer-field">
-          <div class="toggle-row">
-            <label for="chkAutoRefresh" data-i18n="lbl_auto_refresh">Samodejno osveževanje (V živo)</label>
-            <input type="checkbox" id="chkAutoRefresh" checked>
-          </div>
-        </div>
-        <div class="drawer-field" style="margin-top: 6px;">
-          <button id="btnExportCsv" class="btn-drawer-action" style="background: #1c1c24; border: 1px solid var(--accent-blue); color: var(--accent-blue);" data-i18n="btn_export_csv">
-            📥 Izvozi točke v CSV (t, lat, lon, alt)
-          </button>
-        </div>
-      </div>
-
       <!-- Satelitski sloji -->
       <div class="drawer-section">
         <div class="section-title" data-i18n="sec_sat_map">SATELITSKI ZEMLJEVID</div>
@@ -153,6 +124,11 @@
             <label for="moveDistInput" class="drawer-label" data-i18n="lbl_move_dist">Min. premik (m):</label>
             <input type="number" id="moveDistInput" min="5" max="500" value="30" class="drawer-input-mini" style="width: 55px; text-align: center; background: #15151a; color: #00e5ff; border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 6px; color-scheme: dark; font-weight: bold;">
           </div>
+        </div>
+        <div class="drawer-field" style="margin-top: 10px;">
+          <button id="btnExportCsv" class="btn-drawer-action" style="background: #1c1c24; border: 1px solid var(--accent-blue); color: var(--accent-blue);" data-i18n="btn_export_csv">
+            📥 Izvozi točke v CSV (t, lat, lon, alt)
+          </button>
         </div>
       </div>
 
@@ -309,6 +285,6 @@
 
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="viewer.js?v=20261006_4"></script>
+  <script src="viewer.js?v=20261006_5"></script>
 </body>
 </html>
