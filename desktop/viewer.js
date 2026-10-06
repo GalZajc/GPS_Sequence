@@ -718,14 +718,17 @@ function updateScrubberPosition() {
     highlight.style.left = `${startPct.toFixed(2)}%`;
     highlight.style.width = `${widthPct.toFixed(2)}%`;
 
+    const timelineEl = document.getElementById("timelineContainer");
     if (isWindowMode) {
       highlight.classList.add("window-active");
       if (leftHandle) leftHandle.classList.add("window-active");
       if (rightHandle) rightHandle.classList.add("window-active");
+      if (timelineEl) timelineEl.classList.add("window-active-timeline");
     } else {
       highlight.classList.remove("window-active");
       if (leftHandle) leftHandle.classList.remove("window-active");
       if (rightHandle) rightHandle.classList.remove("window-active");
+      if (timelineEl) timelineEl.classList.remove("window-active-timeline");
     }
   }
 
@@ -760,13 +763,15 @@ function updateScrubberPosition() {
    ========================================================== */
 let lastRenderedViewStart = null;
 let lastRenderedViewEnd = null;
+let lastRenderedWindowMode = null;
 
 function updateTimelineVisualLayers() {
-  if (viewStart === lastRenderedViewStart && viewEnd === lastRenderedViewEnd) {
+  if (viewStart === lastRenderedViewStart && viewEnd === lastRenderedViewEnd && isWindowMode === lastRenderedWindowMode) {
     return;
   }
   lastRenderedViewStart = viewStart;
   lastRenderedViewEnd = viewEnd;
+  lastRenderedWindowMode = isWindowMode;
   renderMovementHighlights();
   renderTimelineRuler();
 }
@@ -836,7 +841,8 @@ function renderMovementHighlights() {
   const layer = document.getElementById("movementHighlightLayer");
   if (!layer) return;
 
-  if (!showMovementIntervals || movementIntervals.length === 0 || viewStart >= viewEnd) {
+  // Prikaži le v okenskem načinu (Alt+Scroll z modrima markerjema OD in DO)
+  if (!isWindowMode || !showMovementIntervals || movementIntervals.length === 0 || viewStart >= viewEnd) {
     layer.style.display = "none";
     layer.innerHTML = "";
     return;
@@ -867,11 +873,14 @@ function renderTimelineRuler() {
   const rulerEl = document.getElementById("timelineRuler");
   if (!rulerEl) return;
 
-  if (allPoints.length === 0 || viewStart >= viewEnd) {
+  // Prikaži le v okenskem načinu (Alt+Scroll z modrima markerjema OD in DO)
+  if (!isWindowMode || allPoints.length === 0 || viewStart >= viewEnd) {
+    rulerEl.style.display = "none";
     rulerEl.innerHTML = "";
     return;
   }
 
+  rulerEl.style.display = "block";
   const duration = Math.max(1000, viewEnd - viewStart);
   const durationMin = duration / 60000;
   const durationHours = duration / (3600 * 1000);

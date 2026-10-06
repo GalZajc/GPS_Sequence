@@ -411,8 +411,16 @@ body, html {
   border: none !important;
   border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
   box-sizing: border-box;
+  height: 28px;
+  justify-content: center;
+  transition: height 0.18s ease, transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bottom-timeline.window-active-timeline {
   height: 44px;
-  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  justify-content: flex-end;
+  gap: 2px;
+  padding: 2px 8px 6px 8px !important;
 }
 
 /* Samodejno skrivanje časovnice na dnu */
@@ -420,8 +428,9 @@ body, html {
   transform: translateY(100%);
 }
 
-/* Ravnilo na vrhu časovnice */
+/* Ravnilo na vrhu časovnice (prikazano le v okenskem Alt+Scroll načinu) */
 .timeline-ruler {
+  display: none;
   width: calc(100% - 8px);
   margin: 0 4px;
   height: 16px;
@@ -430,6 +439,10 @@ body, html {
   pointer-events: none;
   user-select: none;
   border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.bottom-timeline.window-active-timeline .timeline-ruler {
+  display: block;
 }
 
 .ruler-tick {
@@ -495,8 +508,9 @@ body, html {
   transition: height 0.12s ease;
 }
 
-/* Označeni intervali dejanskega gibanja */
+/* Označeni intervali dejanskega gibanja (prikazani le v okenskem Alt+Scroll načinu) */
 .movement-highlight-layer {
+  display: none;
   position: absolute;
   top: -2px;
   bottom: -2px;
@@ -506,6 +520,10 @@ body, html {
   border-radius: 4px;
   overflow: visible;
   z-index: 5;
+}
+
+.bottom-timeline.window-active-timeline .movement-highlight-layer {
+  display: block;
 }
 .movement-segment {
   position: absolute;
