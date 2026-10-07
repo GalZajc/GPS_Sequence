@@ -47,6 +47,7 @@ let movementIntervals = [];
 let showMovementIntervals = true;
 let movementWindowMs = 5 * 60 * 1000; // 5 minut
 let movementDistM = 30; // 30 metrov
+let snapDistancePx = 15; // Privzeta razdalja magnetnega privlačenja v pikslih (0 = izklopljeno)
 
 // Kartografski objekti
 let activePolyline = null;
@@ -112,6 +113,7 @@ const I18N = {
     lbl_show_movement: "Označi intervale gibanja na časovnici",
     lbl_move_window: "Okno gibanja (min):",
     lbl_move_dist: "Min. premik (m):",
+    lbl_snap_dist: "Magnetno privlačenje (px):",
     sec_current_point: "TRENUTNA TOČKA",
     lbl_hud_time: "Čas:",
     lbl_hud_speed: "Hitrost:",
@@ -218,6 +220,7 @@ const I18N = {
     lbl_show_movement: "Highlight movement intervals on timeline",
     lbl_move_window: "Movement window (min):",
     lbl_move_dist: "Min. movement (m):",
+    lbl_snap_dist: "Magnetic snap (px):",
     sec_current_point: "CURRENT POINT",
     lbl_hud_time: "Time:",
     lbl_hud_speed: "Speed:",
@@ -640,24 +643,32 @@ function setGpsPoints(points, shouldFitBounds = true) {
   globalTMin = allPoints[0].time_ms;
   globalTMax = allPoints[allPoints.length - 1].time_ms;
 
-  // Privzeto prikaži zadnjih 1000 sekund, da preprečimo sesutje/štekanje pri milijonih točk
-  const defaultWindowMs = 1000 * 1000; // 1000 s
-  if (globalTMax - globalTMin > defaultWindowMs) {
-    tStart = Math.max(globalTMin, globalTMax - defaultWindowMs);
-    tEnd = globalTMax;
-    isWindowMode = true;
+  // Izračunaj intervale dejanskega gibanja pred nastavitvijo privzetega okna
+  computeMovementIntervals();
+
+  // Privzeto nastavi OD in DO na zadnji interval premikanja (če obstaja)
+  if (movementIntervals && movementIntervals.length > 0) {
+    const lastMove = movementIntervals[movementIntervals.length - 1];
+    tStart = lastMove.start;
+    tEnd = Math.max(lastMove.start + 1000, lastMove.end);
   } else {
-    tStart = globalTMin;
-    tEnd = globalTMax;
-    isWindowMode = false;
+    // Če ni zaznanega premikanja, prikaži zadnjih 1000 sekund ali celotno pot
+    const defaultWindowMs = 1000 * 1000; // 1000 s
+    if (globalTMax - globalTMin > defaultWindowMs) {
+      tStart = Math.max(globalTMin, globalTMax - defaultWindowMs);
+      tEnd = globalTMax;
+    } else {
+      tStart = globalTMin;
+      tEnd = globalTMax;
+    }
   }
 
+  isWindowMode = false;
   currentQ = 1.0;
   currentTime = tEnd;
   viewStart = tStart;
   viewEnd = tEnd;
 
-  computeMovementIntervals();
   lastRenderedViewStart = null;
   lastRenderedViewEnd = null;
 
@@ -835,6 +846,42 @@ function computeMovementIntervals() {
     merged.push(cur);
     movementIntervals = merged;
   }
+}
+
+/**
+ * Magnetno privlačenje (snapping) za OD in DO markerje na robove intervalov gibanja.
+ * @param {number} candidateT - Surovi čas (ms), ki ga določa položaj miške
+ * @param {'start'|'end'} handleType - 'start' za levi OD marker, 'end' za desni DO marker
+ * @param {number} trackWidthPx - Širina časovnice v pikslih na zaslonu
+ * @param {number} viewDurationMs - Trajanje trenutno prikazanega časovnega okna (ms)
+ * @returns {number} Čas po morebitnem privlačenju
+ */
+function snapHandleTime(candidateT, handleType, trackWidthPx, viewDurationMs) {
+  if (snapDistancePx <= 0 || !movementIntervals || movementIntervals.length === 0) {
+    return candidateT;
+  }
+  if (!trackWidthPx || trackWidthPx <= 0 || !viewDurationMs || viewDurationMs <= 0) {
+    return candidateT;
+  }
+
+  let bestTarget = candidateT;
+  let minDiffPx = Infinity;
+
+  for (let i = 0; i < movementIntervals.length; i++) {
+    const seg = movementIntervals[i];
+    // OD marker se privlači na začetke intervalov premikanja (seg.start)
+    // DO marker se privlači na konce intervalov premikanja (seg.end)
+    const targetT = (handleType === 'start') ? seg.start : seg.end;
+    const diffMs = Math.abs(candidateT - targetT);
+    const diffPx = (diffMs / viewDurationMs) * trackWidthPx;
+
+    if (diffPx <= snapDistancePx && diffPx < minDiffPx) {
+      minDiffPx = diffPx;
+      bestTarget = targetT;
+    }
+  }
+
+  return bestTarget;
 }
 
 function renderMovementHighlights() {
@@ -1255,11 +1302,15 @@ function setupScrubberEvents() {
 
     if (dragMode === 'leftHandle') {
       const dt = ((e.clientX - dragStartX) / rect.width) * viewDuration;
-      tStart = Math.round(Math.max(globalTMin, Math.min(tEnd - 1000, dragInitialTStart + dt)));
+      const rawT = dragInitialTStart + dt;
+      const snappedT = snapHandleTime(rawT, 'start', rect.width, viewDuration);
+      tStart = Math.round(Math.max(globalTMin, Math.min(tEnd - 1000, snappedT)));
       updateScrubberPosition();
     } else if (dragMode === 'rightHandle') {
       const dt = ((e.clientX - dragStartX) / rect.width) * viewDuration;
-      tEnd = Math.round(Math.min(globalTMax, Math.max(tStart + 1000, dragInitialTEnd + dt)));
+      const rawT = dragInitialTEnd + dt;
+      const snappedT = snapHandleTime(rawT, 'end', rect.width, viewDuration);
+      tEnd = Math.round(Math.min(globalTMax, Math.max(tStart + 1000, snappedT)));
       updateScrubberPosition();
     } else if (dragMode === 'centerBar') {
       const dt = ((e.clientX - dragStartX) / rect.width) * viewDuration;
@@ -1935,6 +1986,15 @@ function setupEventListeners() {
         computeMovementIntervals();
         renderMovementHighlights();
       }
+    });
+  }
+
+  const snapDistInput = document.getElementById("snapDistInput");
+  if (snapDistInput) {
+    snapDistInput.value = snapDistancePx;
+    snapDistInput.addEventListener("input", (e) => {
+      const val = parseInt(e.target.value, 10);
+      snapDistancePx = isNaN(val) ? 0 : Math.max(0, val);
     });
   }
 

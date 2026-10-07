@@ -7,7 +7,7 @@
   
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="style.css?v=20261006_5" />
+  <link rel="stylesheet" href="style.css?v=20261007_1" />
 </head>
 <body>
 
@@ -123,6 +123,12 @@
           <div class="toggle-row">
             <label for="moveDistInput" class="drawer-label" data-i18n="lbl_move_dist">Min. premik (m):</label>
             <input type="number" id="moveDistInput" min="5" max="500" value="30" class="drawer-input-mini" style="width: 55px; text-align: center; background: #15151a; color: #00e5ff; border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 6px; color-scheme: dark; font-weight: bold;">
+          </div>
+        </div>
+        <div class="drawer-field" style="margin-top: 6px;">
+          <div class="toggle-row">
+            <label for="snapDistInput" class="drawer-label" data-i18n="lbl_snap_dist">Magnetno privlačenje (px):</label>
+            <input type="number" id="snapDistInput" min="0" max="100" value="15" class="drawer-input-mini" style="width: 55px; text-align: center; background: #15151a; color: #00e5ff; border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 6px; color-scheme: dark; font-weight: bold;">
           </div>
         </div>
         <div class="drawer-field" style="margin-top: 10px;">
@@ -285,6 +291,6 @@
 
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="viewer.js?v=20261006_5"></script>
+  <script src="viewer.js?v=20261007_1"></script>
 </body>
 </html>
