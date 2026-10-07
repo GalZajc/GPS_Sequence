@@ -4,53 +4,71 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Ozadje tabele / Spreadsheet list znotraj varne cone (24dp do 84dp) -->
-    <!-- Glavni karton tabele -->
-    <path
-        android:fillColor="#1E232E"
-        android:pathData="M30,28 h48 c3.3,0 6,2.7 6,6 v42 c0,3.3 -2.7,6 -6,6 h-48 c-3.3,0 -6,-2.7 -6,-6 v-42 c0,-3.3 2.7,-6 6,-6 z" />
-
-    <!-- Zgornja glava tabele (Header) -->
+    <!-- Zgornja glava tabele (Header vrstica z znižano višino) -->
     <path
         android:fillColor="#2E3748"
-        android:pathData="M30,28 h48 c3.3,0 6,2.7 6,6 v8 h-60 v-8 c0,-3.3 2.7,-6 6,-6 z" />
+        android:pathData="M0,0h108v20h-108z" />
 
-    <!-- Glavne celice v glavi (stolpci Time, Lat, Lon) -->
+    <!-- Črta pod glavo tabele -->
+    <path
+        android:strokeColor="#3A465C"
+        android:strokeWidth="1.8"
+        android:pathData="M0,20h108" />
+
+    <!-- Celice/zavihki v glavi (stolpci Time, Lat, Lon) -->
     <path
         android:fillColor="#4F5D75"
-        android:pathData="M34,33 h10 v4 h-10 z M48,33 h14 v4 h-14 z M66,33 h12 v4 h-12 z" />
+        android:pathData="M15,6 h18 c1.4,0 2.5,1.1 2.5,2.5 v3 c0,1.4 -1.1,2.5 -2.5,2.5 h-18 c-1.4,0 -2.5,-1.1 -2.5,-2.5 v-3 c0,-1.4 1.1,-2.5 2.5,-2.5 z M44,6 h20 c1.4,0 2.5,1.1 2.5,2.5 v3 c0,1.4 -1.1,2.5 -2.5,2.5 h-20 c-1.4,0 -2.5,-1.1 -2.5,-2.5 v-3 c0,-1.4 1.1,-2.5 2.5,-2.5 z M75,6 h18 c1.4,0 2.5,1.1 2.5,2.5 v3 c0,1.4 -1.1,2.5 -2.5,2.5 h-18 c-1.4,0 -2.5,-1.1 -2.5,-2.5 v-3 c0,-1.4 1.1,-2.5 2.5,-2.5 z" />
 
-    <!-- Mrežne črte tabele (Horizontalne vrstice) -->
+    <!-- Navpične mrežne črte (tečejo skozi celotno tabelo vključno z glavo) -->
     <path
         android:strokeColor="#2E3748"
-        android:strokeWidth="1.2"
-        android:pathData="M24,52 h60 M24,64 h60 M24,76 h60" />
+        android:strokeWidth="1.8"
+        android:pathData="M39,0 v108 M69,0 v108" />
 
-    <!-- Mrežne črte tabele (Vertikalni stolpci) -->
+    <!-- Vodoravne mrežne črte -->
     <path
         android:strokeColor="#2E3748"
-        android:strokeWidth="1.2"
-        android:pathData="M46,42 v40 M64,42 v40" />
+        android:strokeWidth="1.8"
+        android:pathData="M0,37.5 h108 M0,55 h108 M0,72.5 h108 M0,90 h108" />
 
     <!-- Podatki v celicah (vrstice koordinat) -->
     <path
         android:fillColor="#3D4B66"
-        android:pathData="M49,46 h11 v2.5 h-11 z M67,46 h8 v2.5 h-8 z M49,58 h12 v2.5 h-12 z M67,58 h9 v2.5 h-9 z M49,70 h10 v2.5 h-10 z M67,70 h8 v2.5 h-8 z" />
+        android:pathData="
+            M12,26.2 h18 c1.4,0 2.5,1.1 2.5,2.5 v0 c0,1.4 -1.1,2.5 -2.5,2.5 h-18 c-1.4,0 -2.5,-1.1 -2.5,-2.5 v0 c0,-1.4 1.1,-2.5 2.5,-2.5 z
+            M45,26.2 h18 c1.4,0 2.5,1.1 2.5,2.5 v0 c0,1.4 -1.1,2.5 -2.5,2.5 h-18 c-1.4,0 -2.5,-1.1 -2.5,-2.5 v0 c0,-1.4 1.1,-2.5 2.5,-2.5 z
+            M75,26.2 h18 c1.4,0 2.5,1.1 2.5,2.5 v0 c0,1.4 -1.1,2.5 -2.5,2.5 h-18 c-1.4,0 -2.5,-1.1 -2.5,-2.5 v0 c0,-1.4 1.1,-2.5 2.5,-2.5 z
 
-    <!-- GPS Pin v levem spodnjem vogalu, ki kaže na točko v tabeli -->
-    <!-- Senca pina -->
+            M12,43.7 h18 c1.4,0 2.5,1.1 2.5,2.5 v0 c0,1.4 -1.1,2.5 -2.5,2.5 h-18 c-1.4,0 -2.5,-1.1 -2.5,-2.5 v0 c0,-1.4 1.1,-2.5 2.5,-2.5 z
+            M45,43.7 h18 c1.4,0 2.5,1.1 2.5,2.5 v0 c0,1.4 -1.1,2.5 -2.5,2.5 h-18 c-1.4,0 -2.5,-1.1 -2.5,-2.5 v0 c0,-1.4 1.1,-2.5 2.5,-2.5 z
+            M75,43.7 h18 c1.4,0 2.5,1.1 2.5,2.5 v0 c0,1.4 -1.1,2.5 -2.5,2.5 h-18 c-1.4,0 -2.5,-1.1 -2.5,-2.5 v0 c0,-1.4 1.1,-2.5 2.5,-2.5 z
+
+            M12,61.2 h18 c1.4,0 2.5,1.1 2.5,2.5 v0 c0,1.4 -1.1,2.5 -2.5,2.5 h-18 c-1.4,0 -2.5,-1.1 -2.5,-2.5 v0 c0,-1.4 1.1,-2.5 2.5,-2.5 z
+            M45,61.2 h18 c1.4,0 2.5,1.1 2.5,2.5 v0 c0,1.4 -1.1,2.5 -2.5,2.5 h-18 c-1.4,0 -2.5,-1.1 -2.5,-2.5 v0 c0,-1.4 1.1,-2.5 2.5,-2.5 z
+            M75,61.2 h18 c1.4,0 2.5,1.1 2.5,2.5 v0 c0,1.4 -1.1,2.5 -2.5,2.5 h-18 c-1.4,0 -2.5,-1.1 -2.5,-2.5 v0 c0,-1.4 1.1,-2.5 2.5,-2.5 z
+
+            M12,78.7 h18 c1.4,0 2.5,1.1 2.5,2.5 v0 c0,1.4 -1.1,2.5 -2.5,2.5 h-18 c-1.4,0 -2.5,-1.1 -2.5,-2.5 v0 c0,-1.4 1.1,-2.5 2.5,-2.5 z
+            M45,78.7 h18 c1.4,0 2.5,1.1 2.5,2.5 v0 c0,1.4 -1.1,2.5 -2.5,2.5 h-18 c-1.4,0 -2.5,-1.1 -2.5,-2.5 v0 c0,-1.4 1.1,-2.5 2.5,-2.5 z
+            M75,78.7 h18 c1.4,0 2.5,1.1 2.5,2.5 v0 c0,1.4 -1.1,2.5 -2.5,2.5 h-18 c-1.4,0 -2.5,-1.1 -2.5,-2.5 v0 c0,-1.4 1.1,-2.5 2.5,-2.5 z
+
+            M12,96.2 h18 c1.4,0 2.5,1.1 2.5,2.5 v0 c0,1.4 -1.1,2.5 -2.5,2.5 h-18 c-1.4,0 -2.5,-1.1 -2.5,-2.5 v0 c0,-1.4 1.1,-2.5 2.5,-2.5 z
+            M45,96.2 h18 c1.4,0 2.5,1.1 2.5,2.5 v0 c0,1.4 -1.1,2.5 -2.5,2.5 h-18 c-1.4,0 -2.5,-1.1 -2.5,-2.5 v0 c0,-1.4 1.1,-2.5 2.5,-2.5 z
+            M75,96.2 h18 c1.4,0 2.5,1.1 2.5,2.5 v0 c0,1.4 -1.1,2.5 -2.5,2.5 h-18 c-1.4,0 -2.5,-1.1 -2.5,-2.5 v0 c0,-1.4 1.1,-2.5 2.5,-2.5 z" />
+
+    <!-- Senca pina v spodnjem levem kotu -->
     <path
         android:fillColor="#55000000"
-        android:pathData="M34,80 m-7,0 a7,2.5 0 1,0 14,0 a7,2.5 0 1,0 -14,0" />
+        android:pathData="M25,95 m-14,0 a14,4.5 0 1,0 28,0 a14,4.5 0 1,0 -28,0" />
 
-    <!-- Rdeč GPS Pin (obrobljen z belo za visok kontrast) -->
+    <!-- Rdeč GPS Pin v spodnjem levem kotu z gladkimi krivuljami -->
     <group
         android:pivotX="12"
-        android:pivotY="22"
-        android:scaleX="1.35"
-        android:scaleY="1.35"
-        android:translateX="22"
-        android:translateY="48">
+        android:pivotY="23"
+        android:scaleX="2.1"
+        android:scaleY="2.1"
+        android:translateX="13"
+        android:translateY="72">
 
         <!-- Bela obroba za pin -->
         <path

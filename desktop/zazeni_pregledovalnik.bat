@@ -5,9 +5,12 @@ cd /d "%~dp0"
 
 echo ==================================================
 echo   Zaganjam GPS Sequence satelitski pregledovalnik...
+echo   Naslov: http://localhost:8050
 echo ==================================================
 
-start "" "http://localhost:8050"
 python server.py
-
-pause
+if errorlevel 1 (
+    echo.
+    echo Napaka pri zagonu strežnika.
+    pause
+)

@@ -132,7 +132,9 @@ def run_server():
     try:
         httpd = HTTPServer(server_address, GpsViewerHandler)
     except OSError as e:
-        print(f"Strežnik že teče na portu {PORT} ali je port zaseden ({e}).")
+        print(f"Strežnik že teče na portu {PORT}. Odpiram pregledovalnik v brskalniku...")
+        import webbrowser
+        webbrowser.open(f"http://localhost:{PORT}")
         return
 
     tracks_dir = get_tracks_dir()
@@ -141,6 +143,11 @@ def run_server():
     print(f"  Odpri v brskalniku: http://localhost:{PORT}")
     print(f"  Mapa meritev: {tracks_dir}")
     print(f"==================================================")
+
+    import webbrowser
+    import threading
+    threading.Timer(0.4, lambda: webbrowser.open(f"http://localhost:{PORT}")).start()
+
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
